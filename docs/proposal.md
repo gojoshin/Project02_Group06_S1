@@ -28,17 +28,142 @@ try changes at https://mermaid.live):
 
 ```mermaid
 erDiagram
-    USER ||--o{ THING : owns
-    USER {
+    USER_ACCOUNT ||--o{ SESSION : has
+    USER_ACCOUNT ||--o{ LIST : creates
+    USER_ACCOUNT ||--o{ WATCHLIST_ITEM : owns
+    USER_ACCOUNT ||--o{ FAVORITE_ITEM : owns
+    USER_ACCOUNT ||--o{ RATING : gives
+
+    MOVIE ||--o{ REVIEW : receives
+    TV_SHOW ||--o{ REVIEW : receives
+    EPISODE ||--o{ REVIEW : receives
+
+    MOVIE ||--o{ IMAGE : has
+    TV_SHOW ||--o{ IMAGE : has
+
+    TV_SHOW ||--o{ SEASON : contains
+    SEASON ||--o{ EPISODE : contains
+
+    LIST ||--o{ LIST_ITEM : contains
+    MOVIE ||--o{ LIST_ITEM : appears_in
+    TV_SHOW ||--o{ LIST_ITEM : appears_in
+
+    MOVIE ||--o{ WATCHLIST_ITEM : added_to
+    TV_SHOW ||--o{ WATCHLIST_ITEM : added_to
+
+    MOVIE ||--o{ FAVORITE_ITEM : favorited
+    TV_SHOW ||--o{ FAVORITE_ITEM : favorited
+
+    MOVIE ||--o{ RATING : rated
+    TV_SHOW ||--o{ RATING : rated
+    EPISODE ||--o{ RATING : rated
+
+    MOVIE }o--o{ MOVIE : similar_to
+
+    USER_ACCOUNT {
         bigint id PK
+        string username
         string email UK
+        string role
     }
-    THING {
+
+    SESSION {
+        string session_id PK
+        bigint user_id FK
+        datetime expires_at
+    }
+
+    MOVIE {
+        bigint id PK
+        string title
+        string overview
+        int runtime
+        date release_date
+        string poster_path
+        string backdrop_path
+    }
+
+    TV_SHOW {
+        bigint id PK
+        string title
+        string overview
+        date first_air_date
+        string poster_path
+        string backdrop_path
+    }
+
+    SEASON {
+        bigint id PK
+        bigint tv_show_id FK
+        int season_number
+        string name
+    }
+
+    EPISODE {
+        bigint id PK
+        bigint season_id FK
+        string name
+        int episode_number
+        int season_number
+        int runtime
+        date air_date
+    }
+
+    REVIEW {
+        bigint id PK
+        string author
+        string content
+        float rating
+        datetime created_at
+        string media_type
+        bigint media_id
+    }
+
+    IMAGE {
+        string file_path PK
+        int width
+        int height
+        float aspect_ratio
+        string media_type
+        bigint media_id
+    }
+
+    LIST {
+        bigint id PK
+        string name
+        string description
+        bigint user_id FK
+    }
+
+    LIST_ITEM {
+        bigint id PK
+        bigint list_id FK
+        string media_type
+        bigint media_id
+    }
+
+    WATCHLIST_ITEM {
         bigint id PK
         bigint user_id FK
-        string name
-        string notes "nullable"
+        string media_type
+        bigint media_id
     }
+
+    FAVORITE_ITEM {
+        bigint id PK
+        bigint user_id FK
+        string media_type
+        bigint media_id
+    }
+
+    RATING {
+        bigint id PK
+        bigint user_id FK
+        string media_type
+        bigint media_id
+        float score
+    }
+
 ```
 
 ## 4. Endpoints
