@@ -50,10 +50,11 @@ Mark each endpoint `public`, `user`, or `admin`. Mark which collection paginates
 filters or sorts.
 
 ## 5. Technical choices
-- **Database host:** (Neon, Supabase, Railway, Atlas, ...) and why
-- **OAuth2 provider:** (Google, GitHub, Auth0) and confirmation that it supports Authorization Code + PKCE from a native app
-- **Repo layout:** monorepo or split, and why
-These become your ADRs later.
+- **Database host:** Supabase
+- **OAuth2 provider:** Google
+- **Repo layout:** Monorepo, we want to keep everything in one repository.
+
+- These become your ADRs later.
 
 ## 6. Risks
 1. **Third-Party API Rate Limiting & Image Performance:** Since the app relies heavily on the TMDB API for data and loading multiple high-resolution images (posters and backdrops) in scrolling lists, we risk hitting rate limits or causing out-of-memory (OOM) errors on the device.
@@ -62,4 +63,17 @@ These become your ADRs later.
     *   *How we will find out/mitigate:* We will create a small technical spike in Sprint 1 to test an architecture using a local database (Room) as a "single source of truth". We will verify if updates to local data correctly trigger UI refreshes via Kotlin StateFlow before syncing back to the network.
 
 ## 7. Team and Sprint 1
-Who owns what in Sprint 1. Link your Project board and Sprint 1 milestone.
+Who owns what in Sprint 1. 
+
+Jayson is working on the frontend UI and database.
+
+Daniel is working on populating the explore page.
+
+Joseph is working on tracking individual episodes of a show.
+
+Joshua is working on the API and backend.
+
+
+**Project board:** https://github.com/users/gojoshin/projects/2
+
+**Sprint 1 milestone:** https://github.com/gojoshin/Project02_Group06_S1/milestones
