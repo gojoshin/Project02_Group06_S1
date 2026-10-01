@@ -168,9 +168,28 @@ erDiagram
 
 ## 4. Endpoints
 | Verb | Path | Auth | Purpose |
-|---|---|---|---|
-| GET | /api/v1/workouts?page=0&size=20 | user | list my workouts (paginated) |
-| ... | ... | ... | ... |
+|POST| /api/v1/auth/register |user|register a user|
+|POST| /api/v1/auth/login |user|login a user|
+|POST| /api/v1/auth/refresh |user|register a page|
+|POST| /api/v1/auth/logout |user|logout a user|
+|GET| /api/v1/me |user|return a user|
+| GET | /api/v1/movies/{movieId} | user | return movies by ID |
+| GET | /api/v1/movies/{movieId}/reviews | user | return reviews of a movie |
+| GET | /api/v1/movies/{movieId}/rating | user | return rating of a movie |
+| GET | /api/v1/reviews/reviewId | user | return reviews |
+| DELETE | /api/v1/reviews/reviewId | admin | delete a  review |
+| POST | /api/v1/reviews/reviewId | admin | publish a  review |
+| GET | /api/v1/users{username} | admin | find a user |
+| GET | /api/v1/me/watchlist | user | get my watchlist |
+| POST | /api/v1/me/watchlist | user | update my watchlist |
+| DELETE | /api/v1/me/watchlist/{movieId) | user | delete a movie from the watchlist |
+
+
+
+
+
+
+
 Mark each endpoint `public`, `user`, or `admin`. Mark which collection paginates and which
 filters or sorts.
 
