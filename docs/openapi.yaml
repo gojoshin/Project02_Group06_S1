@@ -6,17 +6,17 @@
 openapi: 3.0.3
 
 info:
-  title: Workout Tracker API
+  title: TV Show Tracker API
   version: 1.0.0
   description: |
-    Example contract for a workout tracker. Users log workouts made of exercises.
+    API for tracking TV shows, episodes, and user watch progress.
     Every error uses RFC 9457 Problem Details (see components/schemas/Problem).
   license:
     name: MIT
     url: https://opensource.org/licenses/MIT
   contact:
-    name: Team 00
-    url: https://github.com/OWNER/REPO
+    name: Team 06
+    url: https://github.com/gojoshin/Project02_Group06_S1
 
 servers:
   - url: http://localhost:8080
@@ -29,194 +29,120 @@ security:
   - bearerAuth: []
 
 tags:
-  - name: Workouts
-    description: A user's own workouts
-  - name: Exercises
-    description: The shared exercise catalog
+  - name: Shows
+    description: TV shows catalog and progress
+  - name: Episodes
+    description: TV show episodes and watch status
   - name: Users
     description: The signed-in user's own account
   - name: Admin
     description: Admin-only user management
 
 paths:
-  /api/v1/workouts:
-    get:
-      tags: [Workouts]
-      operationId: listMyWorkouts
-      summary: List my workouts (paginated, sortable)
-      parameters:
-        - $ref: '#/components/parameters/Page'
-        - $ref: '#/components/parameters/Size'
-        - name: sort
-          in: query
-          description: Field and direction, Spring Pageable style.
-          schema:
-            type: string
-            enum: ['performedOn,desc', 'performedOn,asc']
-            default: 'performedOn,desc'
-      responses:
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '200':
-          description: One page of the caller's workouts
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/WorkoutPage'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-    post:
-      tags: [Workouts]
-      operationId: createWorkout
-      summary: Log a workout
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkoutCreate'
-      responses:
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '201':
-          description: Created. POST is not idempotent; two calls make two workouts.
-          headers:
-            Location:
-              description: URL of the new workout
-              schema:
-                type: string
-                example: /api/v1/workouts/42
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workout'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-
-  /api/v1/workouts/{workoutId}:
+  /api/v1/shows/{showId}/episodes:
     parameters:
-      - $ref: '#/components/parameters/WorkoutId'
-    get:
-      tags: [Workouts]
-      operationId: getWorkout
-      summary: Get one of my workouts
-      responses:
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '200':
-          description: The workout
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workout'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    put:
-      tags: [Workouts]
-      operationId: replaceWorkout
-      summary: Replace a workout (idempotent)
-      requestBody:
+      - name: showId
+        in: path
         required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkoutCreate'
-      responses:
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '200':
-          description: The replaced workout
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workout'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    patch:
-      tags: [Workouts]
-      operationId: updateWorkout
-      summary: Change some fields of a workout
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/WorkoutPatch'
-      responses:
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '200':
-          description: The updated workout
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Workout'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-    delete:
-      tags: [Workouts]
-      operationId: deleteWorkout
-      summary: Delete a workout
-      responses:
-        '500':
-          $ref: '#/components/responses/InternalError'
-        '400':
-          $ref: '#/components/responses/BadRequest'
-        '204':
-          description: Deleted. No body.
-        '401':
-          $ref: '#/components/responses/Unauthorized'
-        '404':
-          $ref: '#/components/responses/NotFound'
-
-  /api/v1/exercises:
+        schema:
+          type: integer
+          format: int64
+          example: 100
     get:
-      tags: [Exercises]
-      operationId: listExercises
-      summary: Browse the exercise catalog (public, filterable)
-      security: []          # public: no token needed
+      tags: [Shows, Episodes]
+      operationId: getShowEpisodes
+      summary: Get episodes for a show
+      description: Returns a list of all episodes for a specific TV show, optionally paginated.
       parameters:
-        - name: muscleGroup
-          in: query
-          description: Only exercises for this muscle group
-          schema:
-            $ref: '#/components/schemas/MuscleGroup'
         - $ref: '#/components/parameters/Page'
         - $ref: '#/components/parameters/Size'
       responses:
         '500':
           $ref: '#/components/responses/InternalError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
         '200':
-          description: One page of exercises
+          description: A page of episodes for the requested show
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ExercisePage'
+                $ref: '#/components/schemas/EpisodePage'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/episodes/{episodeId}/status:
+    parameters:
+      - name: episodeId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 404
+    put:
+      tags: [Episodes]
+      operationId: updateEpisodeStatus
+      summary: Mark an episode as watched or unwatched
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EpisodeStatusUpdate'
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
         '400':
           $ref: '#/components/responses/BadRequest'
+        '200':
+          description: The updated episode status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Episode'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/shows/{showId}/progress:
+    parameters:
+      - name: showId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 100
+    get:
+      tags: [Shows]
+      operationId: getShowProgress
+      summary: Get user progress for a show
+      description: Returns the user's progress for a specific TV show, including watched episodes and seasons.
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '200':
+          description: The user's progress for the show
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShowProgress'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
 
   /api/v1/users/me:
     delete:
       tags: [Users]
       operationId: deleteMyAccount
       summary: Delete my own account and ALL my data
-      description: Any signed-in user. Deletes the user row and everything they own (workouts, custom exercises).
+      description: Any signed-in user. Deletes the user row and everything they own.
       responses:
         '500':
           $ref: '#/components/responses/InternalError'
@@ -334,14 +260,6 @@ components:
       description: JWT from the OAuth2 Authorization Code + PKCE flow (with Google, send the ID token; Google's access_token is opaque).
 
   parameters:
-    WorkoutId:
-      name: workoutId
-      in: path
-      required: true
-      schema:
-        type: integer
-        format: int64
-        example: 42
     Page:
       name: page
       in: query
@@ -361,111 +279,84 @@ components:
         default: 20
 
   schemas:
-    MuscleGroup:
-      type: string
-      enum: [CHEST, BACK, LEGS, SHOULDERS, ARMS, CORE, CARDIO]
-
-    Workout:
+    Episode:
       type: object
-      required: [id, performedOn, exercises]
+      required: [id, showId, seasonNumber, episodeNumber, title, watched]
       properties:
         id:
           type: integer
           format: int64
-          readOnly: true
-          example: 42
-        performedOn:
-          type: string
-          format: date
-          example: '2026-10-01'
-        durationMin:
-          type: integer
-          minimum: 1
-          nullable: true
-          example: 45
-        notes:
-          type: string
-          maxLength: 500
-          nullable: true
-          example: Felt strong today
-        exercises:
-          type: array
-          items:
-            $ref: '#/components/schemas/WorkoutExercise'
-
-    WorkoutCreate:
-      description: Body for POST and PUT. PUT replaces every field.
-      type: object
-      required: [performedOn, exercises]
-      properties:
-        performedOn:
-          type: string
-          format: date
-          example: '2026-10-01'
-        durationMin:
-          type: integer
-          minimum: 1
-          nullable: true
-          example: 45
-        notes:
-          type: string
-          maxLength: 500
-          nullable: true
-        exercises:
-          type: array
-          minItems: 1
-          items:
-            $ref: '#/components/schemas/WorkoutExercise'
-
-    WorkoutPatch:
-      description: Body for PATCH. Send only the fields you want to change.
-      type: object
-      minProperties: 1
-      properties:
-        durationMin:
-          type: integer
-          minimum: 1
-          nullable: true
-        notes:
-          type: string
-          maxLength: 500
-          nullable: true
-
-    WorkoutExercise:
-      type: object
-      required: [exerciseId, sets, reps]
-      properties:
-        exerciseId:
+          example: 404
+        showId:
           type: integer
           format: int64
-          example: 7
-        sets:
+          example: 100
+        seasonNumber:
           type: integer
-          minimum: 1
-          example: 3
-        reps:
+          example: 1
+        episodeNumber:
           type: integer
-          minimum: 1
+          example: 1
+        title:
+          type: string
+          example: Pilot
+        watched:
+          type: boolean
+          description: Whether the signed-in user has watched this episode
+          example: false
+
+    EpisodePage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Episode'
+        page:
+          $ref: '#/components/schemas/PageMeta'
+
+    EpisodeStatusUpdate:
+      type: object
+      required: [watched]
+      properties:
+        watched:
+          type: boolean
+          description: Set to true if watched, false if unwatched
+          example: true
+
+    ShowProgress:
+      type: object
+      required: [showId, totalEpisodes, watchedEpisodes, seasons]
+      properties:
+        showId:
+          type: integer
+          format: int64
+          example: 100
+        totalEpisodes:
+          type: integer
+          example: 62
+        watchedEpisodes:
+          type: integer
+          example: 12
+        seasons:
+          type: array
+          items:
+            $ref: '#/components/schemas/SeasonProgress'
+
+    SeasonProgress:
+      type: object
+      required: [seasonNumber, totalEpisodes, watchedEpisodes]
+      properties:
+        seasonNumber:
+          type: integer
+          example: 1
+        totalEpisodes:
+          type: integer
           example: 10
-        weightKg:
-          type: number
-          format: double
-          nullable: true
-          example: 60.0
-
-    Exercise:
-      type: object
-      required: [id, name, muscleGroup]
-      properties:
-        id:
+        watchedEpisodes:
           type: integer
-          format: int64
-          example: 7
-        name:
-          type: string
-          example: Back Squat
-        muscleGroup:
-          $ref: '#/components/schemas/MuscleGroup'
+          example: 10
 
     PageMeta:
       description: >-
@@ -487,28 +378,6 @@ components:
         totalPages:
           type: integer
           example: 3
-
-    WorkoutPage:
-      type: object
-      required: [content, page]
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Workout'
-        page:
-          $ref: '#/components/schemas/PageMeta'
-
-    ExercisePage:
-      type: object
-      required: [content, page]
-      properties:
-        content:
-          type: array
-          items:
-            $ref: '#/components/schemas/Exercise'
-        page:
-          $ref: '#/components/schemas/PageMeta'
 
     User:
       type: object
@@ -567,10 +436,10 @@ components:
           example: 404
         detail:
           type: string
-          example: Workout 42 not found
+          example: Item 42 not found
         instance:
           type: string
-          example: /api/v1/workouts/42
+          example: /api/v1/resource/42
 
   responses:
     BadRequest:
@@ -610,7 +479,7 @@ components:
           example:
             title: Not Found
             status: 404
-            detail: Workout 42 not found
+            detail: Resource 42 not found
     InternalError:
       description: Unexpected server error. Your app still needs to show something useful.
       content:
