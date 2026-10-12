@@ -33,12 +33,113 @@ tags:
     description: TV shows catalog and progress
   - name: Episodes
     description: TV show episodes and watch status
+  - name: Reviews
+    description: User reviews for movies and shows
   - name: Users
     description: The signed-in user's own account
   - name: Admin
     description: Admin-only user management
 
 paths:
+  /api/v1/movies/{movieId}/reviews:
+    parameters:
+      - name: movieId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 15
+    get:
+      tags: [Reviews]
+      operationId: getMovieReviews
+      summary: Get reviews for a movie
+      description: Returns a list of reviews for a specific movie, optionally paginated.
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '200':
+          description: A page of reviews for the requested movie
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReviewPage'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/reviews:
+    post:
+      tags: [Reviews]
+      operationId: createReview
+      summary: Create a personal review for a movie or show
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewCreate'
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '201':
+          description: Created
+          headers:
+            Location:
+              description: URL of the new review
+              schema:
+                type: string
+                example: /api/v1/reviews/42
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/v1/reviews/{reviewId}:
+    parameters:
+      - name: reviewId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 42
+    put:
+      tags: [Reviews]
+      operationId: updateReview
+      summary: Edit a personal review
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReviewUpdate'
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '200':
+          description: The updated review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Review'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/v1/shows/{showId}/episodes:
     parameters:
       - name: showId
@@ -378,6 +479,90 @@ components:
         totalPages:
           type: integer
           example: 3
+
+    Review:
+      type: object
+      required: [id, mediaId, mediaType, userId, rating, content, createdAt, updatedAt]
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 42
+        mediaId:
+          type: integer
+          format: int64
+          example: 15
+        mediaType:
+          type: string
+          enum: [MOVIE, SHOW]
+          example: MOVIE
+        userId:
+          type: integer
+          format: int64
+          example: 7
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        content:
+          type: string
+          example: "Great movie, really enjoyed the cinematography!"
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-10-01T12:00:00Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-10-02T15:30:00Z'
+
+    ReviewCreate:
+      type: object
+      required: [mediaId, mediaType, rating, content]
+      properties:
+        mediaId:
+          type: integer
+          format: int64
+          example: 15
+        mediaType:
+          type: string
+          enum: [MOVIE, SHOW]
+          example: MOVIE
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 4
+        content:
+          type: string
+          maxLength: 1000
+          example: "Great movie, really enjoyed the cinematography!"
+
+    ReviewUpdate:
+      type: object
+      required: [rating, content]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+          example: 5
+        content:
+          type: string
+          maxLength: 1000
+          example: "On second thought, it was a masterpiece!"
+
+    ReviewPage:
+      type: object
+      required: [content, page]
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Review'
+        page:
+          $ref: '#/components/schemas/PageMeta'
 
     User:
       type: object
