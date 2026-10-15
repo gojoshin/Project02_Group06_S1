@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: moviebox-backend
+  datasource:
+    url: jdbc:h2:mem:movieboxdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: 
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+tmdb:
+  api:
+    url: https://api.themoviedb.org/3
+    key: ${TMDB_API_KEY:demo_key}
+    token: ${TMDB_BEARER_TOKEN:}

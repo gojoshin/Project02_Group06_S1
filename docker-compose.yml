@@ -1,0 +1,15 @@
+services:
+  moviebox-backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-supabase}
+      - SUPABASE_HOST=${SUPABASE_HOST:-db.ref.supabase.co}
+      - SUPABASE_DB=${SUPABASE_DB:-postgres}
+      - SUPABASE_USER=${SUPABASE_USER:-postgres}
+      - SUPABASE_PASSWORD=${SUPABASE_PASSWORD}
+      - TMDB_API_KEY=${TMDB_API_KEY}
+    restart: unless-stopped

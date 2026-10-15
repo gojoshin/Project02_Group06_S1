@@ -1,0 +1,14 @@
+spring:
+  config:
+    activate:
+      on-profile: supabase
+  datasource:
+    url: jdbc:postgresql://${SUPABASE_HOST:db.ref.supabase.co}:5432/${SUPABASE_DB:postgres}?sslmode=require
+    driver-class-name: org.postgresql.Driver
+    username: ${SUPABASE_USER:postgres}
+    password: ${SUPABASE_PASSWORD}
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
