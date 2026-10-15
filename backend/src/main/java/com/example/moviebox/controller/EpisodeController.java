@@ -4,11 +4,7 @@ import com.example.moviebox.dto.EpisodeDto;
 import com.example.moviebox.dto.EpisodeStatusUpdateDto;
 import com.example.moviebox.entity.EpisodeWatchStatus;
 import com.example.moviebox.repository.EpisodeWatchStatusRepository;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/episodes")
