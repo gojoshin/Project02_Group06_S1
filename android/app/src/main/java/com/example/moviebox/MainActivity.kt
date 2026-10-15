@@ -1,4 +1,5 @@
 package com.example.moviebox
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -21,10 +22,12 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
@@ -46,12 +49,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviebox.ui.components.ComingSoonScreen
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.outlined.History
 import com.example.moviebox.ui.screens.HistoryScreen
+import com.example.moviebox.ui.screens.LandingScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
-import com.example.moviebox.ui.screens.LandingScreen
+import com.example.moviebox.ui.screens.LoginScreen
 
 // Screens for connecting the bottom bar UI are ui/screens/.
 
@@ -79,9 +81,12 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MovieBoxTheme {
-                // TODO (Sprint 2/3): Google sign-in goes here, before the app shows
-                // and only show MovieBoxApp() once we have a token.
-                MovieBoxApp()
+                LoginScreen(
+                    onGoogleTokenReceived = { idToken ->
+                        // Next step: send this token to Spring Boot
+                        // Do not log or display the token.
+                    }
+                )
             }
         }
     }
