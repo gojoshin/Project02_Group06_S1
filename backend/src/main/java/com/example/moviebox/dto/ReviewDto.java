@@ -10,6 +10,7 @@ public record ReviewDto(
         Long userId,
         Integer rating,
         String content,
+        boolean hasSpoilers,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {}

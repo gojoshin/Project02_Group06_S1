@@ -7,6 +7,7 @@ data class Review(
     val userId: Int,
     val rating: Int,
     val content: String,
+    val hasSpoilers: Boolean = false,
     val createdAt: String,
     val updatedAt: String
 )
