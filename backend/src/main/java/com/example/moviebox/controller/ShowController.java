@@ -1,19 +1,11 @@
 package com.example.moviebox.controller;
 
-import com.example.moviebox.dto.EpisodeDto;
-import com.example.moviebox.dto.EpisodePageDto;
-import com.example.moviebox.dto.PageMetaDto;
-import com.example.moviebox.dto.SeasonProgressDto;
-import com.example.moviebox.dto.ShowProgressDto;
+import com.example.moviebox.dto.*;
 import com.example.moviebox.dto.tmdb.TmdbEpisode;
 import com.example.moviebox.entity.EpisodeWatchStatus;
 import com.example.moviebox.repository.EpisodeWatchStatusRepository;
 import com.example.moviebox.service.TmdbService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -60,5 +52,10 @@ public class ShowController {
 
         SeasonProgressDto season1 = new SeasonProgressDto(1, totalEpisodes, watchedCount);
         return new ShowProgressDto(showId, totalEpisodes, watchedCount, List.of(season1));
+    }
+
+    @GetMapping("/{showId}/streaming")
+    public List<StreamingProviderDto> getShowStreaming(@PathVariable Long showId) {
+        return tmdbService.getShowStreamingProviders(showId);
     }
 }

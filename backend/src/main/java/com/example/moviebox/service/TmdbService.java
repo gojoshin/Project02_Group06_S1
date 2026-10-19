@@ -90,6 +90,49 @@ public class TmdbService {
         return getSampleEpisodes(showId);
     }
 
+    public List<com.example.moviebox.dto.StreamingProviderDto> getMovieStreamingProviders(Long movieId) {
+        try {
+            com.example.moviebox.dto.tmdb.TmdbWatchProvidersResponse response = restClient.get()
+                    .uri("/movie/{movieId}/watch/providers?api_key={key}", movieId, tmdbConfig.getTmdbApiKey())
+                    .retrieve()
+                    .body(com.example.moviebox.dto.tmdb.TmdbWatchProvidersResponse.class);
+            return extractUSProviders(response);
+        } catch (Exception e) {
+            return getSampleProviders();
+        }
+    }
+
+    public List<com.example.moviebox.dto.StreamingProviderDto> getShowStreamingProviders(Long showId) {
+        try {
+            com.example.moviebox.dto.tmdb.TmdbWatchProvidersResponse response = restClient.get()
+                    .uri("/tv/{showId}/watch/providers?api_key={key}", showId, tmdbConfig.getTmdbApiKey())
+                    .retrieve()
+                    .body(com.example.moviebox.dto.tmdb.TmdbWatchProvidersResponse.class);
+            return extractUSProviders(response);
+        } catch (Exception e) {
+            return getSampleProviders();
+        }
+    }
+
+    private List<com.example.moviebox.dto.StreamingProviderDto> extractUSProviders(com.example.moviebox.dto.tmdb.TmdbWatchProvidersResponse response) {
+        if (response != null && response.results() != null && response.results().containsKey("US")) {
+            com.example.moviebox.dto.tmdb.TmdbWatchProviderRegion usRegion = response.results().get("US");
+            if (usRegion.flatrate() != null) {
+                return usRegion.flatrate().stream()
+                        .map(p -> new com.example.moviebox.dto.StreamingProviderDto(p.providerId(), p.providerName(), p.logoPath()))
+                        .toList();
+            }
+        }
+        return new ArrayList<>();
+    }
+
+    private List<com.example.moviebox.dto.StreamingProviderDto> getSampleProviders() {
+        List<com.example.moviebox.dto.StreamingProviderDto> list = new ArrayList<>();
+        list.add(new com.example.moviebox.dto.StreamingProviderDto(8L, "Netflix", "/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg"));
+        list.add(new com.example.moviebox.dto.StreamingProviderDto(9L, "Amazon Prime Video", "/ifhbNuuVnlwYy5oXAob0wVKpeAD.jpg"));
+        return list;
+    }
+
     private List<TmdbMovie> getSampleMovies() {
         List<TmdbMovie> list = new ArrayList<>();
         list.add(new TmdbMovie(100L, "Lanterns", "Lanterns overview", "2026-01-01", "https://www.themoviedb.org/t/p/w500/rb94rKVIzLyfWufIN7WqLvadBDH.jpg", "/bg1.jpg", 8.8, 110));

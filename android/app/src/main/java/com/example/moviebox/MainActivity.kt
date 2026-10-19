@@ -89,10 +89,25 @@ class MainActivity : ComponentActivity() {
 fun MovieBoxApp() {
     // Which tab is picked.
     var currentTab by rememberSaveable { mutableStateOf(Tab.HOME) }
+    
+    // Simple routing for detail screen
+    var currentMovieId by rememberSaveable { mutableStateOf<Int?>(null) }
 
     // Back button on any tab other than Home goes back to Home instead of closing the app right away
-    BackHandler(enabled = currentTab != Tab.HOME) {
-        currentTab = Tab.HOME
+    BackHandler(enabled = currentTab != Tab.HOME || currentMovieId != null) {
+        if (currentMovieId != null) {
+            currentMovieId = null
+        } else {
+            currentTab = Tab.HOME
+        }
+    }
+
+    if (currentMovieId != null) {
+        com.example.moviebox.ui.screens.MovieDetailScreen(
+            movieId = currentMovieId!!,
+            onBack = { currentMovieId = null }
+        )
+        return
     }
 
     Scaffold(
@@ -110,7 +125,7 @@ fun MovieBoxApp() {
             when (currentTab) {
                 Tab.HOME -> LandingScreen(
                     onOpenMovie = { movieId ->
-                        // TODO: open the movie detail screen for movieId
+                        currentMovieId = movieId
                     }
                 )
 

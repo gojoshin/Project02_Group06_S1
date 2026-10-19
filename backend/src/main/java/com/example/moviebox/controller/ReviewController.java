@@ -1,20 +1,12 @@
 package com.example.moviebox.controller;
 
-import com.example.moviebox.dto.ReviewCreateDto;
-import com.example.moviebox.dto.ReviewDto;
-import com.example.moviebox.dto.ReviewUpdateDto;
+import com.example.moviebox.dto.*;
 import com.example.moviebox.entity.Review;
 import com.example.moviebox.exception.ResourceNotFoundException;
 import com.example.moviebox.repository.ReviewRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
