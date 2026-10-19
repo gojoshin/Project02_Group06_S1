@@ -1,5 +1,5 @@
 package com.example.moviebox.ui.screens
-
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -128,7 +128,7 @@ private fun MovieListRow(movie: Movie, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .androidx.compose.foundation.clickable { onClick() }
+            .clickable { onClick() }
             .padding(vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
