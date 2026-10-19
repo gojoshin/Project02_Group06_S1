@@ -1,5 +1,4 @@
 package com.example.moviebox
-
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
@@ -52,6 +51,7 @@ import androidx.compose.material.icons.outlined.History
 import com.example.moviebox.ui.screens.HistoryScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
+import com.example.moviebox.ui.screens.LandingScreen
 
 // Screens for connecting the bottom bar UI are ui/screens/.
 
