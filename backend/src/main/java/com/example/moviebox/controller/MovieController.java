@@ -1,18 +1,12 @@
 package com.example.moviebox.controller;
 
-import com.example.moviebox.dto.PageMetaDto;
-import com.example.moviebox.dto.ReviewDto;
-import com.example.moviebox.dto.ReviewPageDto;
+import com.example.moviebox.dto.*;
 import com.example.moviebox.dto.tmdb.TmdbMovie;
 import com.example.moviebox.entity.MediaTypeEnum;
 import com.example.moviebox.entity.Review;
 import com.example.moviebox.repository.ReviewRepository;
 import com.example.moviebox.service.TmdbService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -28,11 +22,13 @@ public class MovieController {
         this.reviewRepository = reviewRepository;
     }
 
+    // Popular movies for the home screen, straight from TMDB.
     @GetMapping("/popular")
     public List<TmdbMovie> getPopularMovies() {
         return tmdbService.getPopularMovies();
     }
 
+    // One movie's details from TMDB.
     @GetMapping("/{movieId}")
     public TmdbMovie getMovie(@PathVariable Long movieId) {
         return tmdbService.getMovie(movieId);
@@ -46,7 +42,9 @@ public class MovieController {
     ) {
         List<Review> reviews = reviewRepository.findByMediaIdAndMediaType(movieId, MediaTypeEnum.MOVIE);
         List<ReviewDto> dtos = reviews.stream()
-                .map(r -> new ReviewDto(r.getId(), r.getMediaId(), r.getMediaType(), r.getUserId(), r.getRating(), r.getContent(), r.getCreatedAt(), r.getUpdatedAt()))
+                .map(r -> new ReviewDto(r.getId(), r.getMediaId(), r.getMediaType(),
+                        r.getUserId(), r.getRating(), r.getContent(),
+                        r.getCreatedAt(), r.getUpdatedAt()))
                 .toList();
 
         PageMetaDto pageMeta = new PageMetaDto(size, page, dtos.size(), 1);
