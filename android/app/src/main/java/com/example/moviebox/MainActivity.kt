@@ -84,7 +84,7 @@ class MainActivity : ComponentActivity() {
                 LoginScreen(
                     onGoogleTokenReceived = { idToken ->
                         // Next step: send this token to Spring Boot
-                        // Do not log or display the token.
+                        // without logging or displaying it
                     }
                 )
             }
