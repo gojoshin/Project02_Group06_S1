@@ -81,12 +81,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MovieBoxTheme {
-                LoginScreen(
-                    onGoogleTokenReceived = { idToken ->
-                        // Next step: send this token to Spring Boot
-                        // without logging or displaying it
-                    }
-                )
+//                LoginScreen(
+//                    onGoogleTokenReceived = { idToken ->
+//                        // Next step: send this token to Spring Boot
+//                        // without logging or displaying it
+//                    }
+//                )
+                MovieBoxApp()
             }
         }
     }
