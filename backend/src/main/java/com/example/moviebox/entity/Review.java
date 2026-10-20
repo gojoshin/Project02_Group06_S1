@@ -28,6 +28,9 @@ public class Review {
     private String content;
 
     @Column(nullable = false)
+    private boolean hasSpoilers = false;
+
+    @Column(nullable = false)
     private LocalDateTime createdAt;
 
     @Column(nullable = false)
@@ -35,14 +38,19 @@ public class Review {
 
     public Review() {}
 
-    public Review(Long mediaId, MediaTypeEnum mediaType, Long userId, Integer rating, String content) {
+    public Review(Long mediaId, MediaTypeEnum mediaType, Long userId, Integer rating, String content, boolean hasSpoilers) {
         this.mediaId = mediaId;
         this.mediaType = mediaType;
         this.userId = userId;
         this.rating = rating;
         this.content = content;
+        this.hasSpoilers = hasSpoilers;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
+    }
+
+    public Review(Long mediaId, MediaTypeEnum mediaType, Long userId, Integer rating, String content) {
+        this(mediaId, mediaType, userId, rating, content, false);
     }
 
     public Long getId() { return id; }
@@ -61,6 +69,11 @@ public class Review {
     public String getContent() { return content; }
     public void setContent(String content) {
         this.content = content;
+        this.updatedAt = LocalDateTime.now();
+    }
+    public boolean getHasSpoilers() { return hasSpoilers; }
+    public void setHasSpoilers(boolean hasSpoilers) {
+        this.hasSpoilers = hasSpoilers;
         this.updatedAt = LocalDateTime.now();
     }
     public LocalDateTime getCreatedAt() { return createdAt; }

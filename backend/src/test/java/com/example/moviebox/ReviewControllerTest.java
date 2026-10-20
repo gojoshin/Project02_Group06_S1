@@ -27,7 +27,8 @@ class ReviewControllerTest {
                     "mediaId": 100,
                     "mediaType": "MOVIE",
                     "rating": 5,
-                    "content": "Awesome movie!"
+                    "content": "Awesome movie!",
+                    "hasSpoilers": true
                 }
                 """;
 
@@ -37,13 +38,15 @@ class ReviewControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(header().exists("Location"))
                 .andExpect(jsonPath("$.rating").value(5))
+                .andExpect(jsonPath("$.hasSpoilers").value(true))
                 .andExpect(jsonPath("$.content").value("Awesome movie!"))
                 .andReturn().getResponse().getContentAsString();
 
         String updateJson = """
                 {
                     "rating": 4,
-                    "content": "Updated review content"
+                    "content": "Updated review content",
+                    "hasSpoilers": false
                 }
                 """;
 
@@ -52,6 +55,7 @@ class ReviewControllerTest {
                         .content(updateJson))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rating").value(4))
+                .andExpect(jsonPath("$.hasSpoilers").value(false))
                 .andExpect(jsonPath("$.content").value("Updated review content"));
     }
 }

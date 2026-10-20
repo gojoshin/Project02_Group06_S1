@@ -6,5 +6,6 @@ public record ReviewCreateDto(
         Long mediaId,
         MediaTypeEnum mediaType,
         Integer rating,
-        String content
+        String content,
+        Boolean hasSpoilers
 ) {}
