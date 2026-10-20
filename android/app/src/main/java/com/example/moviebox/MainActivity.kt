@@ -47,7 +47,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviebox.ui.components.ComingSoonScreen
-import com.example.moviebox.ui.screens.LandingScreen
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.outlined.History
+import com.example.moviebox.ui.screens.HistoryScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
 
@@ -61,6 +63,7 @@ enum class Tab(
     HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
     EXPLORE("Explore", Icons.Filled.Explore, Icons.Outlined.Explore),
     FAVORITES("Favorites", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
+    HISTORY("History", Icons.Filled.History, Icons.Outlined.History),
     PROFILE("Profile", Icons.Filled.Person, Icons.Outlined.Person)
 }
 
@@ -138,6 +141,8 @@ fun MovieBoxApp() {
                     title = "Favorites",
                     note = "Movies you hearted will show up here."
                 )
+
+                Tab.HISTORY -> HistoryScreen()
 
                 Tab.PROFILE -> ComingSoonScreen(
                     title = "Profile",

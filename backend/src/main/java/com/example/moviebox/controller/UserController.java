@@ -1,6 +1,7 @@
 package com.example.moviebox.controller;
 
 import com.example.moviebox.dto.*;
+import com.example.moviebox.entity.HistoryItem;
 import com.example.moviebox.entity.UserAccount;
 import com.example.moviebox.exception.ResourceNotFoundException;
 import com.example.moviebox.repository.*;
@@ -19,19 +20,22 @@ public class UserController {
     private final EpisodeWatchStatusRepository episodeWatchStatusRepository;
     private final WatchlistItemRepository watchlistItemRepository;
     private final FavoriteItemRepository favoriteItemRepository;
+    private final HistoryItemRepository historyItemRepository;
 
     public UserController(
             UserAccountRepository userRepository,
             ReviewRepository reviewRepository,
             EpisodeWatchStatusRepository episodeWatchStatusRepository,
             WatchlistItemRepository watchlistItemRepository,
-            FavoriteItemRepository favoriteItemRepository
+            FavoriteItemRepository favoriteItemRepository,
+            HistoryItemRepository historyItemRepository
     ) {
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
         this.episodeWatchStatusRepository = episodeWatchStatusRepository;
         this.watchlistItemRepository = watchlistItemRepository;
         this.favoriteItemRepository = favoriteItemRepository;
+        this.historyItemRepository = historyItemRepository;
     }
 
     @DeleteMapping("/me")
@@ -85,11 +89,30 @@ public class UserController {
         deleteUserData(userId);
     }
 
+    @GetMapping("/{userId}/history")
+    public HistoryPageDto getUserHistory(
+            @PathVariable Long userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
+        if (!userRepository.existsById(userId)) {
+            throw new ResourceNotFoundException("User " + userId + " not found");
+        }
+        List<HistoryItem> items = historyItemRepository.findByUserIdOrderByWatchedAtDesc(userId);
+        List<HistoryItemDto> dtos = items.stream()
+                .map(i -> new HistoryItemDto(i.getId(), i.getUserId(), i.getMediaType(), i.getMediaId(), i.getWatchedAt()))
+                .toList();
+
+        PageMetaDto pageMeta = new PageMetaDto(size, page, dtos.size(), 1);
+        return new HistoryPageDto(dtos, pageMeta);
+    }
+
     private void deleteUserData(Long userId) {
         reviewRepository.deleteByUserId(userId);
         episodeWatchStatusRepository.deleteByUserId(userId);
         watchlistItemRepository.deleteByUserId(userId);
         favoriteItemRepository.deleteByUserId(userId);
+        historyItemRepository.deleteByUserId(userId);
         userRepository.findById(userId).ifPresent(userRepository::delete);
     }
 }
