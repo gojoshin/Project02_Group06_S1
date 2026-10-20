@@ -10,5 +10,5 @@ public record TmdbMovie(
         @JsonProperty("poster_path") String posterPath,
         @JsonProperty("backdrop_path") String backdropPath,
         @JsonProperty("vote_average") Double voteAverage,
-        Integer runtime
+        @JsonProperty("runtime") int runtime
 ) {}

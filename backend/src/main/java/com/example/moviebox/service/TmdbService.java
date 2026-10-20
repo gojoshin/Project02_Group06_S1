@@ -135,10 +135,10 @@ public class TmdbService {
 
     private List<TmdbMovie> getSampleMovies() {
         List<TmdbMovie> list = new ArrayList<>();
-        list.add(new TmdbMovie(100L, "Lanterns", "Lanterns overview", "2026-01-01", "/poster1.jpg", "/bg1.jpg", 8.8, 110));
-        list.add(new TmdbMovie(101L, "Better Call Saul", "Vince Gilligan drama", "2015-02-08", "/poster2.jpg", "/bg2.jpg", 8.9, 50));
-        list.add(new TmdbMovie(102L, "Obsession", "Thriller", "2026-02-01", "/poster3.jpg", "/bg3.jpg", 7.5, 95));
-        list.add(new TmdbMovie(103L, "Dune: Part 2", "Sci-Fi Epic", "2024-03-01", "/poster4.jpg", "/bg4.jpg", 8.6, 166));
+        list.add(new TmdbMovie(100L, "Lanterns", "Lanterns overview", "2026-01-01", "https://www.themoviedb.org/t/p/w500/rb94rKVIzLyfWufIN7WqLvadBDH.jpg", "/bg1.jpg", 8.8, 110));
+        list.add(new TmdbMovie(101L, "Better Call Saul", "Vince Gilligan drama", "2015-02-08", "/poster2.jpg", "https://www.themoviedb.org/t/p/w500/fC2HDm5t0kHl7mTm7jxMR31b7by.jpg", 8.9, 50));
+        list.add(new TmdbMovie(102L, "Obsession", "Thriller", "2026-02-01", "https://www.themoviedb.org/t/p/w500/bRwnj8WEKBCvmfeUNOukJPwB43K.jpg", "/bg3.jpg", 7.5, 95));
+        list.add(new TmdbMovie(103L, "Dune: Part 2", "Sci-Fi Epic", "2024-03-01", "https://www.themoviedb.org/t/p/w500/6izwz7rsy95ARzTR3poZ8H6c5pp.jpg", "/bg4.jpg", 8.6, 166));
         return list;
     }
 

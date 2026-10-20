@@ -52,4 +52,6 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.test.manifest)
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation("androidx.compose.material:material-icons-extended")
+    // Something to load poster images from a URL
+    implementation("io.coil-kt:coil-compose:2.7.0")
 }

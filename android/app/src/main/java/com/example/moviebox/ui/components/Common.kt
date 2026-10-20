@@ -19,9 +19,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.example.moviebox.data.Movie
 import com.example.moviebox.ui.theme.Display
 import com.example.moviebox.ui.theme.Mono
@@ -67,8 +69,8 @@ fun Hairline(modifier: Modifier = Modifier) {
 }
 
 /**
- * Colored placeholder poster with the title and year. Set the width and the
- * height follows at a real poster's shape.
+ * Movie poster. Shows the real image when the movie has a posterUrl,
+ * otherwise, it's a colored box with the title and year.
  */
 @Composable
 fun PosterBlock(
@@ -78,7 +80,6 @@ fun PosterBlock(
 ) {
     val posterShape = RoundedCornerShape(4.dp)
 
-    // TODO: swap the colored box for Coil's AsyncImage once movies have a posterUrl
     Box(
         modifier = modifier
             .aspectRatio(2f / 3f)
@@ -86,24 +87,37 @@ fun PosterBlock(
             .background(Color(movie.posterColor))
             .border(1.dp, MaterialTheme.colorScheme.outline, posterShape)
             .clickable { onClick() }
-            .padding(8.dp)
     ) {
-        Column(Modifier.align(Alignment.BottomStart)) {
-            Text(
-                text = movie.title,
-                fontFamily = Display,
-                fontSize = 13.sp,
-                lineHeight = 15.sp,
-                color = Color.White,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis
+        if (movie.posterUrl != null) {
+            // The colored background shows through until the image finishes loading
+            AsyncImage(
+                model = movie.posterUrl,
+                contentDescription = "${movie.title} poster",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.matchParentSize(),
             )
-            Text(
-                text = movie.year.toString(),
-                fontFamily = Mono,
-                fontSize = 9.sp,
-                color = Color.White.copy(alpha = 0.7f)
-            )
+        } else {
+            Column(
+                Modifier
+                    .align(Alignment.BottomStart)
+                    .padding(8.dp)
+            ) {
+                Text(
+                    text = movie.title,
+                    fontFamily = Display,
+                    fontSize = 13.sp,
+                    lineHeight = 15.sp,
+                    color = Color.White,
+                    maxLines = 3,
+                    overflow = TextOverflow.Ellipsis
+                )
+                Text(
+                    text = movie.year.toString(),
+                    fontFamily = Mono,
+                    fontSize = 9.sp,
+                    color = Color.White.copy(alpha = 0.7f)
+                )
+            }
         }
     }
 }
