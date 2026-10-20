@@ -53,4 +53,9 @@ public class ShowController {
         SeasonProgressDto season1 = new SeasonProgressDto(1, totalEpisodes, watchedCount);
         return new ShowProgressDto(showId, totalEpisodes, watchedCount, List.of(season1));
     }
+
+    @GetMapping("/{showId}/streaming")
+    public List<StreamingProviderDto> getShowStreaming(@PathVariable Long showId) {
+        return tmdbService.getShowStreamingProviders(showId);
+    }
 }

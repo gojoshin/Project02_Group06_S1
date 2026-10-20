@@ -41,6 +41,36 @@ tags:
     description: Admin-only user management
 
 paths:
+  /api/v1/movies/{movieId}/streaming:
+    parameters:
+      - name: movieId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 15
+    get:
+      tags: [Movies]
+      operationId: getMovieStreaming
+      summary: Get streaming providers for a movie
+      description: Returns a list of streaming services where the movie is available to watch in the US.
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '200':
+          description: A list of streaming providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamingProvider'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
   /api/v1/movies/{movieId}/reviews:
     parameters:
       - name: movieId
@@ -235,6 +265,36 @@ paths:
                 $ref: '#/components/schemas/ShowProgress'
         '401':
           $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/v1/shows/{showId}/streaming:
+    parameters:
+      - name: showId
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+          example: 100
+    get:
+      tags: [Shows]
+      operationId: getShowStreaming
+      summary: Get streaming providers for a TV show
+      description: Returns a list of streaming services where the show is available to watch in the US.
+      responses:
+        '500':
+          $ref: '#/components/responses/InternalError'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '200':
+          description: A list of streaming providers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/StreamingProvider'
         '404':
           $ref: '#/components/responses/NotFound'
 
@@ -625,6 +685,21 @@ components:
         instance:
           type: string
           example: /api/v1/resource/42
+
+    StreamingProvider:
+      type: object
+      required: [providerId, name, logoPath]
+      properties:
+        providerId:
+          type: integer
+          format: int64
+          example: 8
+        name:
+          type: string
+          example: Netflix
+        logoPath:
+          type: string
+          example: /t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg
 
   responses:
     BadRequest:

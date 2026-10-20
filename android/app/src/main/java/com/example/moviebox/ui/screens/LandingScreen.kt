@@ -115,7 +115,7 @@ fun LandingScreen(
 
             // Newest first. For now "newest" just means the most recent year year. Will fix it.
             for (movie in movies.sortedByDescending { it.year }.take(4)) {
-                MovieListRow(movie)
+                MovieListRow(movie = movie, onClick = { onOpenMovie(movie.id) })
                 Hairline()
             }
         }
@@ -124,10 +124,11 @@ fun LandingScreen(
 
 // One movie as a simple text row: title on the left, year on the right
 @Composable
-private fun MovieListRow(movie: Movie) {
+private fun MovieListRow(movie: Movie, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .androidx.compose.foundation.clickable { onClick() }
             .padding(vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

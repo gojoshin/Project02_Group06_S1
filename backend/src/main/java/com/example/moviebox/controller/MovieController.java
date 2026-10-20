@@ -46,4 +46,9 @@ public class MovieController {
         PageMetaDto pageMeta = new PageMetaDto(size, page, dtos.size(), 1);
         return new ReviewPageDto(dtos, pageMeta);
     }
+
+    @GetMapping("/{movieId}/streaming")
+    public List<StreamingProviderDto> getMovieStreaming(@PathVariable Long movieId) {
+        return tmdbService.getMovieStreamingProviders(movieId);
+    }
 }
