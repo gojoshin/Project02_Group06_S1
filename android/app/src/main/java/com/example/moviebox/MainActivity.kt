@@ -89,7 +89,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             MovieBoxTheme {
 
-                // Temporary UI state for testing backend verification.
+                // Checks for testing backend verification.
                 var isLoggedIn by remember {
                     mutableStateOf(false)
                 }

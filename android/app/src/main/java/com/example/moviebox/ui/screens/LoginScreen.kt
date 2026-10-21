@@ -73,15 +73,6 @@ fun LoginScreen(
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        Spacer(
-            modifier = Modifier.height(8.dp)
-        )
-
-        Text(
-            text = "Login with Google",
-            fontSize = 16.sp,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
 
         Spacer(
             modifier = Modifier.height(32.dp)

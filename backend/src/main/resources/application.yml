@@ -24,3 +24,7 @@ tmdb:
     url: https://api.themoviedb.org/3
     key: ${TMDB_API_KEY:demo_key}
     token: ${TMDB_BEARER_TOKEN:}
+
+google:
+  oauth:
+    client-id: ${GOOGLE_WEB_CLIENT_ID}
