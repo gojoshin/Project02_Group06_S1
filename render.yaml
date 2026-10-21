@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: moviebox-backend
+    runtime: docker
+    dockerContext: ./backend
+    dockerfilePath: Dockerfile
+    plan: free
+    region: oregon
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: render
+      - key: RENDER_DB_HOST
+        fromDatabase:
+          name: moviebox-db
+          property: host
+      - key: RENDER_DB_NAME
+        fromDatabase:
+          name: moviebox-db
+          property: database
+      - key: RENDER_DB_USER
+        fromDatabase:
+          name: moviebox-db
+          property: user
+      - key: RENDER_DB_PASSWORD
+        fromDatabase:
+          name: moviebox-db
+          property: password
+      - key: TMDB_API_KEY
+        sync: false
+
+databases:
+  - name: moviebox-db
+    databaseName: moviebox_db
+    user: moviebox_user
+    plan: free
+    region: oregon
