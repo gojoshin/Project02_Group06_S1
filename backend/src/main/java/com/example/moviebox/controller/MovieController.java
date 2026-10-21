@@ -43,7 +43,7 @@ public class MovieController {
         List<Review> reviews = reviewRepository.findByMediaIdAndMediaType(movieId, MediaTypeEnum.MOVIE);
         List<ReviewDto> dtos = reviews.stream()
                 .map(r -> new ReviewDto(r.getId(), r.getMediaId(), r.getMediaType(),
-                        r.getUserId(), r.getRating(), r.getContent(),
+                        r.getUserId(), r.getRating(), r.getContent(), r.getHasSpoilers(),
                         r.getCreatedAt(), r.getUpdatedAt()))
                 .toList();
 
