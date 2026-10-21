@@ -54,6 +54,13 @@ import com.example.moviebox.ui.screens.LandingScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
 import com.example.moviebox.ui.screens.LoginScreen
+import android.util.Log
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.moviebox.data.AuthRetrofit
+import com.example.moviebox.data.GoogleLoginRequest
+import kotlinx.coroutines.launch
+
 
 // Screens for connecting the bottom bar UI are ui/screens/.
 
@@ -70,10 +77,10 @@ enum class Tab(
 }
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //DarkMode by default so makes the UI light and bright
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
@@ -82,29 +89,81 @@ class MainActivity : ComponentActivity() {
         setContent {
             MovieBoxTheme {
 
-                var isLoggedIn by rememberSaveable {
+                // Temporary UI state for testing backend verification.
+                var isLoggedIn by remember {
                     mutableStateOf(false)
                 }
 
+                var loginError by remember {
+                    mutableStateOf<String?>(null)
+                }
+
+                var isVerifying by remember {
+                    mutableStateOf(false)
+                }
+
+                val coroutineScope = rememberCoroutineScope()
+
                 if (isLoggedIn) {
-
                     MovieBoxApp()
-
                 } else {
+                    Column(
+                        modifier = Modifier.fillMaxSize()
+                    ) {
+                        LoginScreen(
+                            onGoogleTokenReceived = { idToken ->
 
-                    LoginScreen(
-                        onGoogleTokenReceived = { idToken ->
+                                if (!isVerifying) {
+                                    isVerifying = true
+                                    loginError = null
 
-                            android.util.Log.d(
-                                "GoogleSignIn",
-                                "Google ID token received successfully"
-                            )
+                                    coroutineScope.launch {
+                                        try {
+                                            val response =
+                                                AuthRetrofit.api.googleLogin(
+                                                    GoogleLoginRequest(idToken)
+                                                )
 
-                            // Temporary navigation test.
-                            // Backend token verification comes next.
-                            isLoggedIn = true
+                                            if (response.status == "verified") {
+                                                Log.d(
+                                                    "MovieBoxAuth",
+                                                    "Google token verified by backend"
+                                                )
+
+                                                isLoggedIn = true
+                                            } else {
+                                                loginError =
+                                                    "Backend verification failed."
+                                            }
+
+                                        } catch (e: Exception) {
+                                            Log.e(
+                                                "MovieBoxAuth",
+                                                "Backend verification error",
+                                                e
+                                            )
+
+                                            loginError =
+                                                "Unable to verify Google login. Check that the backend is running."
+                                        } finally {
+                                            isVerifying = false
+                                        }
+                                    }
+                                }
+                            }
+                        )
+
+                        if (isVerifying) {
+                            Text("Verifying Google login...")
                         }
-                    )
+
+                        loginError?.let { error ->
+                            Text(
+                                text = error,
+                                color = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
                 }
             }
         }
