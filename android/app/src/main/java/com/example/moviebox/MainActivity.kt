@@ -52,6 +52,7 @@ import androidx.compose.material.icons.outlined.History
 import com.example.moviebox.ui.screens.HistoryScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
+import com.example.moviebox.ui.screens.LandingScreen
 
 // Screens for connecting the bottom bar UI are ui/screens/.
 
@@ -92,7 +93,7 @@ class MainActivity : ComponentActivity() {
 fun MovieBoxApp() {
     // Which tab is picked.
     var currentTab by rememberSaveable { mutableStateOf(Tab.HOME) }
-    
+
     // Simple routing for detail screen
     var currentMovieId by rememberSaveable { mutableStateOf<Int?>(null) }
 
