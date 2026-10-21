@@ -81,13 +81,31 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MovieBoxTheme {
-//                LoginScreen(
-//                    onGoogleTokenReceived = { idToken ->
-//                        // Next step: send this token to Spring Boot
-//                        // without logging or displaying it
-//                    }
-//                )
-                MovieBoxApp()
+
+                var isLoggedIn by rememberSaveable {
+                    mutableStateOf(false)
+                }
+
+                if (isLoggedIn) {
+
+                    MovieBoxApp()
+
+                } else {
+
+                    LoginScreen(
+                        onGoogleTokenReceived = { idToken ->
+
+                            android.util.Log.d(
+                                "GoogleSignIn",
+                                "Google ID token received successfully"
+                            )
+
+                            // Temporary navigation test.
+                            // Backend token verification comes next.
+                            isLoggedIn = true
+                        }
+                    )
+                }
             }
         }
     }

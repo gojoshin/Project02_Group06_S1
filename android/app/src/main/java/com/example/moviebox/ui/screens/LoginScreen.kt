@@ -36,10 +36,11 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import kotlinx.coroutines.launch
 import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption
+import android.util.Log
 
 @Composable
 fun LoginScreen(
-    onGoogleTokenReceived: (String) -> Unit = {}
+    onGoogleTokenReceived: (String) -> Unit
 ) {
 
     val context = LocalContext.current
@@ -128,6 +129,7 @@ fun LoginScreen(
                                     credential.data
                                 )
 
+                            Log.d("GoogleSignIn", "Google authentication successful")
                             onGoogleTokenReceived(
                                 googleCredential.idToken
                             )
