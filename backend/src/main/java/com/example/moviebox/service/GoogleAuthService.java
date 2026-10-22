@@ -14,10 +14,17 @@ public class GoogleAuthService {
 
     private final GoogleIdTokenVerifier verifier;
 
-    public GoogleAuthService(@Value("${google.oauth.client-id}") String clientId) {
-        this.verifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
-                .setAudience(Collections.singletonList(clientId))
-                .build();
+    public GoogleAuthService(@Value("${google.oauth.client-id:demo_client_id}") String clientId) {
+        GoogleIdTokenVerifier tempVerifier = null;
+        try {
+            if (clientId != null && !clientId.isBlank()) {
+                tempVerifier = new GoogleIdTokenVerifier.Builder(new NetHttpTransport(), new GsonFactory())
+                        .setAudience(Collections.singletonList(clientId))
+                        .build();
+            }
+        } catch (Exception ignored) {
+        }
+        this.verifier = tempVerifier;
     }
 
     public GoogleIdToken.Payload verifyToken(String idTokenString) {
@@ -26,6 +33,10 @@ public class GoogleAuthService {
             mockPayload.setEmail("admin@csumb.edu");
             mockPayload.set("name", "Dev Admin");
             return mockPayload;
+        }
+
+        if (verifier == null) {
+            return null;
         }
 
         try {
