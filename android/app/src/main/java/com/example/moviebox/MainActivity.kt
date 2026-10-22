@@ -58,22 +58,31 @@ import android.util.Log
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.example.moviebox.data.AuthRetrofit
-import com.example.moviebox.data.GoogleLoginRequest
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.moviebox.data.LoginRequest
 import kotlinx.coroutines.launch
 
+
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviebox.ui.AuthState
+import com.example.moviebox.ui.AuthViewModel
+import com.example.moviebox.ui.screens.AdminScreen
+import com.example.moviebox.ui.screens.LoginScreen
 
 // Screens for connecting the bottom bar UI are ui/screens/.
 
 enum class Tab(
     val label: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
+    val requiresAdmin: Boolean = false
 ) {
     HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
     EXPLORE("Explore", Icons.Filled.Explore, Icons.Outlined.Explore),
     FAVORITES("Favorites", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
     HISTORY("History", Icons.Filled.History, Icons.Outlined.History),
-    PROFILE("Profile", Icons.Filled.Person, Icons.Outlined.Person)
+    PROFILE("Profile", Icons.Filled.Person, Icons.Outlined.Person),
+    ADMIN("Admin", Icons.Filled.Person, Icons.Outlined.Person, true) // Hidden by default
 }
 
 class MainActivity : ComponentActivity() {
@@ -88,81 +97,24 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MovieBoxTheme {
-
-                // Checks for testing backend verification.
-                var isLoggedIn by remember {
-                    mutableStateOf(false)
-                }
-
-                var loginError by remember {
-                    mutableStateOf<String?>(null)
-                }
-
-                var isVerifying by remember {
-                    mutableStateOf(false)
-                }
-
-                val coroutineScope = rememberCoroutineScope()
-
-                if (isLoggedIn) {
-                    MovieBoxApp()
-                } else {
-                    Column(
-                        modifier = Modifier.fillMaxSize()
-                    ) {
+                val authViewModel: AuthViewModel = viewModel()
+                
+                // Collect state from ViewModel using collectAsStateWithLifecycle (better for Android)
+                val authState by authViewModel.authState.collectAsStateWithLifecycle()
+                
+                when (authState) {
+                    AuthState.LOGGED_OUT, AuthState.ERROR, AuthState.LOADING -> {
                         LoginScreen(
-                            onGoogleTokenReceived = { idToken ->
-
-                                if (!isVerifying) {
-                                    isVerifying = true
-                                    loginError = null
-
-                                    coroutineScope.launch {
-                                        try {
-                                            val response =
-                                                AuthRetrofit.api.googleLogin(
-                                                    GoogleLoginRequest(idToken)
-                                                )
-
-                                            if (response.status == "verified") {
-                                                Log.d(
-                                                    "MovieBoxAuth",
-                                                    "Google token verified by backend"
-                                                )
-
-                                                isLoggedIn = true
-                                            } else {
-                                                loginError =
-                                                    "Backend verification failed."
-                                            }
-
-                                        } catch (e: Exception) {
-                                            Log.e(
-                                                "MovieBoxAuth",
-                                                "Backend verification error",
-                                                e
-                                            )
-
-                                            loginError =
-                                                "Unable to verify Google login. Check that the backend is running."
-                                        } finally {
-                                            isVerifying = false
-                                        }
-                                    }
-                                }
+                            onGoogleTokenReceived = { token ->
+                                authViewModel.authenticateWithGoogle(token)
                             }
                         )
-
-                        if (isVerifying) {
-                            Text("Verifying Google login...")
-                        }
-
-                        loginError?.let { error ->
-                            Text(
-                                text = error,
-                                color = MaterialTheme.colorScheme.error
-                            )
-                        }
+                    }
+                    AuthState.LOGGED_IN_USER -> {
+                        MovieBoxApp(isAdmin = false)
+                    }
+                    AuthState.LOGGED_IN_ADMIN -> {
+                        MovieBoxApp(isAdmin = true)
                     }
                 }
             }
@@ -172,7 +124,7 @@ class MainActivity : ComponentActivity() {
 
 /** The app shell. Whatever screen is active, plus the bottom bar. */
 @Composable
-fun MovieBoxApp() {
+fun MovieBoxApp(isAdmin: Boolean = false) {
     // Which tab is picked.
     var currentTab by rememberSaveable { mutableStateOf(Tab.HOME) }
 
@@ -202,6 +154,7 @@ fun MovieBoxApp() {
         bottomBar = {
             BottomTabBar(
                 currentTab = currentTab,
+                isAdmin = isAdmin,
                 onSelectTab = { pickedTab -> currentTab = pickedTab }
             )
         }
@@ -231,6 +184,8 @@ fun MovieBoxApp() {
                     title = "Profile",
                     note = "Your ratings, sign out, delete account, and the admin link (admins only)."
                 )
+                
+                Tab.ADMIN -> AdminScreen()
             }
         }
     }
@@ -238,15 +193,13 @@ fun MovieBoxApp() {
 
 
 // BottomTabBar
-//
-// Same look as last project's tab bar (thin line on top, small uppercase
-// labels, white for the selected tab and gray for the rest), but with an
-// icon above each label instead of a dot.
 @Composable
-private fun BottomTabBar(currentTab: Tab, onSelectTab: (Tab) -> Unit) {
+private fun BottomTabBar(currentTab: Tab, isAdmin: Boolean, onSelectTab: (Tab) -> Unit) {
     val lineColor = MaterialTheme.colorScheme.outline
     val selectedColor = MaterialTheme.colorScheme.onBackground
     val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+    
+    val visibleTabs = Tab.entries.filter { !it.requiresAdmin || isAdmin }
 
     Row(
         modifier = Modifier
@@ -254,13 +207,12 @@ private fun BottomTabBar(currentTab: Tab, onSelectTab: (Tab) -> Unit) {
             .selectableGroup()
             .background(MaterialTheme.colorScheme.surface)
             .drawBehind {
-                // Thin divider along the top of the bar
                 drawLine(lineColor, Offset(0f, 0f), Offset(size.width, 0f), 1.dp.toPx())
             }
             .navigationBarsPadding()
             .padding(vertical = 10.dp)
     ) {
-        for (tab in Tab.entries) {
+        for (tab in visibleTabs) {
             val isSelected = tab == currentTab
             val tabColor = if (isSelected) selectedColor else unselectedColor
 

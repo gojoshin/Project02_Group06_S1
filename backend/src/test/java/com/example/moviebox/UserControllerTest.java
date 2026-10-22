@@ -32,7 +32,9 @@ class UserControllerTest {
     @BeforeEach
     void setUp() {
         userRepository.deleteAll();
-        testUser = userRepository.save(new UserAccount("test@csumb.edu", "Test User", Role.USER));
+        testUser = userRepository.save(new UserAccount("test@csumb.edu", "Test User", Role.ADMIN));
+        // Force the test user to be the admin fallback check
+        testUser = userRepository.findAll().get(0);
     }
 
     @Test
@@ -48,7 +50,7 @@ class UserControllerTest {
         mockMvc.perform(get("/api/v1/users/" + testUser.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("test@csumb.edu"))
-                .andExpect(jsonPath("$.role").value("USER"));
+                .andExpect(jsonPath("$.role").value("ADMIN"));
     }
 
     @Test
@@ -64,10 +66,14 @@ class UserControllerTest {
 
     @Test
     void deleteUser_removesUser() throws Exception {
-        mockMvc.perform(delete("/api/v1/users/" + testUser.getId()))
+        // Need to create a secondary user to delete, because deleting the mock admin user 
+        // will cause subsequent checkAdminAccess() calls to fail inside the same request context or cleanup.
+        UserAccount targetUser = userRepository.save(new UserAccount("target@csumb.edu", "Target User", Role.USER));
+
+        mockMvc.perform(delete("/api/v1/users/" + targetUser.getId()))
                 .andExpect(status().isNoContent());
 
-        mockMvc.perform(get("/api/v1/users/" + testUser.getId()))
+        mockMvc.perform(get("/api/v1/users/" + targetUser.getId()))
                 .andExpect(status().isNotFound());
     }
 }
