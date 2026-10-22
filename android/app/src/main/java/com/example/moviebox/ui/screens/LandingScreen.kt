@@ -1,3 +1,4 @@
+
 package com.example.moviebox.ui.screens
 
 import androidx.compose.foundation.clickable
@@ -18,7 +19,15 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -36,6 +45,7 @@ import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 
 // LandingScreen (the Home tab)
@@ -46,6 +56,7 @@ import java.util.Locale
 //   4. "Recently added" list, one movie per row with a thin line between
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LandingScreen(
     movies: List<Movie> = sampleMovies,
@@ -56,6 +67,138 @@ fun LandingScreen(
     val weekday = today.dayOfWeek.getDisplayName(TextStyle.SHORT, Locale.getDefault())
     val month = today.month.getDisplayName(TextStyle.SHORT, Locale.getDefault())
     val dateText = "$weekday / $month ${today.dayOfMonth}".uppercase(Locale.getDefault())
+
+    // State of filters
+    var showFilters by remember { mutableStateOf(false) }
+
+    var titleFilter by remember { mutableStateOf("") }
+    var yearFilter by remember { mutableStateOf("") }
+    var sortFilter by remember { mutableStateOf("Default") }
+
+    var draftTitle by remember { mutableStateOf("") }
+    var draftYear by remember { mutableStateOf("") }
+    var draftSort by remember { mutableStateOf("Default") }
+
+    // filtered movies
+    val filteredMovies = movies.filter { movie ->
+        movie.title.contains(titleFilter, ignoreCase = true) &&
+                (yearFilter.isBlank() || movie.year.toString() == yearFilter)
+    }.let { results ->
+        when (sortFilter) {
+            "Newest" -> results.sortedByDescending { it.year }
+            "Oldest" -> results.sortedBy { it.year }
+            "Title A-Z" -> results.sortedBy { it.title.lowercase() }
+            "Title Z-A" -> results.sortedByDescending { it.title.lowercase() }
+            else -> results
+        }
+    }
+
+    // Panel for the filters
+    if (showFilters) {
+        ModalBottomSheet(
+            onDismissRequest = { showFilters = false }
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState())
+                    .padding(horizontal = ScreenSidePadding)
+            ) {
+                Text(
+                    text = "Filters",
+                    fontFamily = Display,
+                    fontSize = 28.sp,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                OutlinedTextField(
+                    value = draftTitle,
+                    onValueChange = { draftTitle = it },
+                    label = { Text("Movie title") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(Modifier.height(12.dp))
+
+                OutlinedTextField(
+                    value = draftYear,
+                    onValueChange = {
+                        draftYear = it.filter { char -> char.isDigit() }.take(4)
+                    },
+                    label = { Text("Release year") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true
+                )
+
+                Spacer(Modifier.height(20.dp))
+
+                Text(
+                    text = "Sort by",
+                    fontFamily = Mono,
+                    fontSize = 13.sp
+                )
+
+                Spacer(Modifier.height(8.dp))
+
+                listOf(
+                    "Default",
+                    "Newest",
+                    "Oldest",
+                    "Title A-Z",
+                    "Title Z-A"
+                ).forEach { option ->
+                    OutlinedButton(
+                        onClick = { draftSort = option },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(
+                            if (draftSort == option) "✓ $option" else option
+                        )
+                    }
+                }
+
+                Spacer(Modifier.height(20.dp))
+
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedButton(
+                        onClick = {
+                            titleFilter = ""
+                            yearFilter = ""
+                            sortFilter = "Default"
+
+                            draftTitle = ""
+                            draftYear = ""
+                            draftSort = "Default"
+
+                            showFilters = false
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Reset")
+                    }
+
+                    Button(
+                        onClick = {
+                            titleFilter = draftTitle.trim()
+                            yearFilter = draftYear
+                            sortFilter = draftSort
+                            showFilters = false
+                        },
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text("Apply")
+                    }
+                }
+
+                Spacer(Modifier.height(32.dp))
+            }
+        }
+    }
 
     Column(
         modifier = Modifier
@@ -86,6 +229,21 @@ fun LandingScreen(
                 fontSize = 14.sp,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
+
+            // Button for filters
+            Spacer(Modifier.height(16.dp))
+
+            OutlinedButton(
+                onClick = {
+                    draftTitle = titleFilter
+                    draftYear = yearFilter
+                    draftSort = sortFilter
+                    showFilters = true
+                }
+            ) {
+                Text("Filters")
+            }
+
             Spacer(Modifier.height(36.dp))
             SectionLabel("Popular this week")
             Spacer(Modifier.height(12.dp))
@@ -98,7 +256,7 @@ fun LandingScreen(
             contentPadding = PaddingValues(horizontal = ScreenSidePadding),
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(movies) { movie ->
+            items(filteredMovies) { movie ->
                 PosterBlock(
                     movie = movie,
                     modifier = Modifier.width(112.dp),
@@ -115,7 +273,7 @@ fun LandingScreen(
             Hairline()
 
             // Newest first. For now "newest" just means the most recent year year. Will fix it.
-            for (movie in movies.sortedByDescending { it.year }.take(4)) {
+            for (movie in filteredMovies.sortedByDescending { it.year }.take(4)) {
                 MovieListRow(movie = movie, onClick = { onOpenMovie(movie.id) })
                 Hairline()
             }
