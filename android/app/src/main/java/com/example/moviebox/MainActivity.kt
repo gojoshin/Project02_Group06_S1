@@ -65,6 +65,12 @@ import com.example.moviebox.ui.screens.LoginScreen
 import com.example.moviebox.ui.screens.ProfileScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateListOf
+import com.example.moviebox.data.FavoritesRetrofit
+import com.example.moviebox.data.sampleMovies
+import com.example.moviebox.ui.screens.FavoritesScreen
+import kotlinx.coroutines.launch
 
 enum class Tab(
     val label: String,
@@ -146,6 +152,54 @@ fun MovieBoxApp(
     // Simple routing for detail screen
     var currentMovieId by rememberSaveable { mutableStateOf<Int?>(null) }
 
+
+    // FAVORITES
+    // Ids of every movie this user hearted. Loaded from the backend when they
+    // log in, then updated whenever a heart gets tapped.
+    val favoriteMovieIds = remember { mutableStateListOf<Int>() }
+    val favoritesScope = rememberCoroutineScope()
+    val userId = currentUser?.id
+
+    // Runs again if a different user logs in, so each account sees its own list
+    LaunchedEffect(userId) {
+        favoriteMovieIds.clear()
+        if (userId == null) return@LaunchedEffect
+
+        try {
+            val savedFavorites = FavoritesRetrofit.api.getFavorites(userId)
+            favoriteMovieIds.addAll(savedFavorites.map { it.mediaId.toInt() })
+        } catch (e: Exception) {
+            Log.e("MovieBoxFavorites", "Couldn't load favorites", e)
+        }
+    }
+
+    // Adds the movie if it isn't a favorite yet, removes it if it is
+    val toggleFavorite: (Int) -> Unit = toggle@{ movieId ->
+        // No one logged in (like in the Preview), so there's nowhere to save it
+        if (userId == null) return@toggle
+
+        val wasFavorite = movieId in favoriteMovieIds
+
+        // Update the screen right away so the heart feels instant
+        if (wasFavorite) favoriteMovieIds.remove(movieId) else favoriteMovieIds.add(movieId)
+
+        // Then save it to the database
+        favoritesScope.launch {
+            try {
+                if (wasFavorite) {
+                    val response = FavoritesRetrofit.api.removeFavorite(userId, "MOVIE", movieId.toLong())
+                    if (!response.isSuccessful) throw Exception("Delete failed: ${response.code()}")
+                } else {
+                    FavoritesRetrofit.api.addFavorite(userId, "MOVIE", movieId.toLong())
+                }
+            } catch (e: Exception) {
+                Log.e("MovieBoxFavorites", "Couldn't save favorite", e)
+                // Saving failed, so undo the change on screen
+                if (wasFavorite) favoriteMovieIds.add(movieId) else favoriteMovieIds.remove(movieId)
+            }
+        }
+    }
+
     // Back button on any tab other than Home goes back to Home instead of closing the app right away
     BackHandler(enabled = currentTab != Tab.HOME || currentMovieId != null) {
         if (currentMovieId != null) {
@@ -158,7 +212,9 @@ fun MovieBoxApp(
     if (currentMovieId != null) {
         com.example.moviebox.ui.screens.MovieDetailScreen(
             movieId = currentMovieId!!,
-            onBack = { currentMovieId = null }
+            onBack = { currentMovieId = null },
+            isFavorite = currentMovieId!! in favoriteMovieIds,
+            onToggleFavorite = { toggleFavorite(currentMovieId!!) }
         )
         return
     }
@@ -188,9 +244,11 @@ fun MovieBoxApp(
                     note = "Browse and search every movie. This will become the paginated list from the API."
                 )
 
-                Tab.FAVORITES -> ComingSoonScreen(
-                    title = "Favorites",
-                    note = "Movies you hearted will show up here."
+                Tab.FAVORITES -> FavoritesScreen(
+                    // Turn the saved ids back into movies to show
+                    favoriteMovies = sampleMovies.filter { it.id in favoriteMovieIds },
+                    onOpenMovie = { movieId -> currentMovieId = movieId },
+                    onRemoveFavorite = { movieId -> toggleFavorite(movieId) }
                 )
 
                 Tab.HISTORY -> HistoryScreen()
