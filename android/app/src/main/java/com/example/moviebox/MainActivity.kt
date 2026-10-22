@@ -183,9 +183,10 @@ fun MovieBoxApp(
                     }
                 )
 
-                Tab.EXPLORE -> ComingSoonScreen(
-                    title = "Explore",
-                    note = "Browse and search every movie. This will become the paginated list from the API."
+                Tab.EXPLORE -> com.example.moviebox.ui.screens.ExploreScreen(
+                    onOpenMovie = { movieId ->
+                        currentMovieId = movieId
+                    }
                 )
 
                 Tab.FAVORITES -> ComingSoonScreen(
