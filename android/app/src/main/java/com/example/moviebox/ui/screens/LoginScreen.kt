@@ -26,7 +26,8 @@ import kotlinx.coroutines.launch
 fun LoginScreen(
     onGoogleTokenReceived: (String) -> Unit,
     onPasswordLogin: (String, String) -> Unit = { _, _ -> },
-    onPasswordRegister: (String, String, String) -> Unit = { _, _, _ -> }
+    onPasswordRegister: (String, String, String) -> Unit = { _, _, _ -> },
+    externalErrorMessage: String? = null
 ) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
@@ -38,7 +39,9 @@ fun LoginScreen(
     var password by remember { mutableStateOf("") }
 
     var isLoading by remember { mutableStateOf(false) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var localErrorMessage by remember { mutableStateOf<String?>(null) }
+
+    val displayedError = externalErrorMessage ?: localErrorMessage
 
     Column(
         modifier = Modifier
@@ -63,7 +66,10 @@ fun LoginScreen(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly
         ) {
-            TextButton(onClick = { isCreateAccountMode = false }) {
+            TextButton(onClick = { 
+                isCreateAccountMode = false
+                localErrorMessage = null
+            }) {
                 Text(
                     text = "SIGN IN",
                     fontFamily = Mono,
@@ -71,7 +77,10 @@ fun LoginScreen(
                     color = if (!isCreateAccountMode) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-            TextButton(onClick = { isCreateAccountMode = true }) {
+            TextButton(onClick = { 
+                isCreateAccountMode = true
+                localErrorMessage = null
+            }) {
                 Text(
                     text = "CREATE ACCOUNT",
                     fontFamily = Mono,
@@ -117,6 +126,7 @@ fun LoginScreen(
 
         Button(
             onClick = {
+                localErrorMessage = null
                 if (isCreateAccountMode) {
                     onPasswordRegister(email, displayName, password)
                 } else {
@@ -145,7 +155,7 @@ fun LoginScreen(
             onClick = {
                 coroutineScope.launch {
                     isLoading = true
-                    errorMessage = null
+                    localErrorMessage = null
 
                     try {
                         val credentialManager = CredentialManager.create(context)
@@ -165,11 +175,11 @@ fun LoginScreen(
                             Log.d("GoogleSignIn", "Google authentication successful")
                             onGoogleTokenReceived(googleCredential.idToken)
                         } else {
-                            errorMessage = "Google sign-in failed."
+                            localErrorMessage = "Google sign-in failed."
                         }
                     } catch (e: Exception) {
                         Log.e("GoogleSignIn", "Google sign-in error", e)
-                        errorMessage = "Google sign-in failed: ${e.message}"
+                        localErrorMessage = "Google sign-in failed: ${e.message}"
                     } finally {
                         isLoading = false
                     }
@@ -206,7 +216,7 @@ fun LoginScreen(
             CircularProgressIndicator()
         }
 
-        errorMessage?.let { message ->
+        displayedError?.let { message ->
             Spacer(modifier = Modifier.height(16.dp))
             Text(text = message, color = MaterialTheme.colorScheme.error)
         }
