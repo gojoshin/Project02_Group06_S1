@@ -23,9 +23,7 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object AuthRetrofit {
-
-
-    val api: AuthApi = Retrofit.Builder()
+    var api: AuthApi = Retrofit.Builder()
         .baseUrl("https://moviebox-backend-62qk.onrender.com/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
