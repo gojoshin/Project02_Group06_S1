@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
@@ -30,6 +31,15 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Problem> handleValidation(MethodArgumentNotValidException ex, HttpServletRequest request) {
         Problem problem = new Problem("about:blank", "Bad Request", HttpStatus.BAD_REQUEST.value(), "Validation failed for request", request.getRequestURI());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(PROBLEM_JSON).body(problem);
+    }
+
+    @ExceptionHandler(ResponseStatusException.class)
+    public ResponseEntity<Problem> handleResponseStatus(ResponseStatusException ex, HttpServletRequest request) {
+        int status = ex.getStatusCode().value();
+        HttpStatus httpStatus = HttpStatus.valueOf(status);
+        String detail = ex.getReason() != null ? ex.getReason() : httpStatus.getReasonPhrase();
+        Problem problem = new Problem("about:blank", httpStatus.getReasonPhrase(), status, detail, request.getRequestURI());
+        return ResponseEntity.status(status).contentType(PROBLEM_JSON).body(problem);
     }
 
     @ExceptionHandler(Exception.class)
