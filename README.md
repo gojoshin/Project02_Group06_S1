@@ -1,69 +1,85 @@
-# CST 438 Project 02: API Template
+# MovieBox Monorepo
 
-Starter repo for Project 02. **One person per team** clicks **Use this template → Create a new
-repository**, names it after your API, and adds teammates as collaborators.
+MovieBox is a full-stack movie and TV show tracking application. It consists of a **Spring Boot 3 / Java 21 REST API backend** and a modern **Jetpack Compose Android mobile application**.
 
-> Replace this README with your own in Sprint 4. The prompt lists what it must contain.
+---
 
-## What's in here
+## 🎬 Project Overview & Features
 
-| Path | What it is | When |
-|---|---|---|
-| `docs/proposal.md` | Proposal template: pitch, resources, ER sketch, endpoints, choices, risks | **Thu 10/1** |
-| `docs/openapi.yaml` | A complete example contract (workout tracker). Replace it with your API. | Sprint 1 |
-| `redocly.yaml` | Lint rules for the contract | Sprint 1 |
-| `.github/ISSUE_TEMPLATE/user_story.md` | Every new issue starts as a user story with acceptance criteria | now |
-| `.github/pull_request_template.md` | Every PR starts with `Closes #` and a test checklist | now |
-| `.gitignore` | Gradle, Android, IntelliJ, Node, and **secrets** (`.env`, keystores, `local.properties`) | now |
+MovieBox allows users to discover popular movies, log ratings and reviews, track watch progress, and manage user accounts.
 
-Where your code goes is up to you: an `api/` and an `android/` folder in this repo (monorepo),
-or a second repo for the Android app. Write it down in an ADR.
+* **Movie & TV Show Discovery**: Integrates with The Movie Database (TMDB) API for real-time popular movies, details, posters, and streaming availability.
+* **Review & Rating System**: Users can rate movies (1–5 stars), write detailed reviews, and flag spoilers.
+* **Multi-Method Authentication**:
+  * **Google OAuth Sign-In**: Powered by Android Credential Manager API and verified cryptographically on the backend using `google-api-client`.
+  * **Username & Password Authentication**: Standard account registration and login with BCrypt password hashing.
+  * **Dev / Test Bypass**: Quick login for development and testing.
+* **Admin Console & Role-Based Access Control (RBAC)**:
+  * Automatic assignment of the `ADMIN` role to the first registered user.
+  * Admins can view all registered accounts, promote standard users to Admins, and delete user accounts.
+* **Cloud Deployment**: Backend hosted on **Render** as a Docker Web Service connected to a managed **Render PostgreSQL** database.
 
-## First 15 minutes
+---
 
-- [ ] Add teammates: **Settings → Collaborators**
-- [ ] Protect `main`: **Settings → Rules → Rulesets → New branch ruleset**. Target the default branch,
-      require a PR with **2 approvals** (1 for a team of 3), block force pushes. Enforcement: **Active**.
-- [ ] Create milestones `Sprint 1` through `Sprint 4`: **Issues → Milestones**
-- [ ] Create a Project board (Kanban) and link it: **Projects tab → Link a project**
-- [ ] Start `docs/proposal.md` on a branch:
+## 📁 Repository Structure
 
-```bash
-git switch -c docs/proposal
-# edit docs/proposal.md
-git add docs/proposal.md
-git commit -m "Draft proposal"
-git push -u origin docs/proposal
-gh pr create --fill
+This repository is organized as a monorepo containing both the backend service and the Android client:
+
+```text
+Project02_Group06_S1/
+├── android/               # Jetpack Compose Android Mobile App
+│   ├── app/               # App module, UI screens, ViewModels, and Retrofit API client
+│   └── README.md          # Android documentation & setup guide
+├── backend/               # Spring Boot 3 REST API Service
+│   ├── src/               # Controllers, Services, Entities, DTOs, and Repositories
+│   ├── Dockerfile         # Multi-stage Docker build file
+│   └── README.md          # Backend API documentation & database guide
+├── docs/                  # API Contracts & Design Specifications
+│   ├── openapi.yaml       # OpenAPI 3.0 API Specification
+│   └── proposal.md        # Project pitch, ER diagrams, and technical choices
+├── docker-compose.yml     # Local multi-container Docker configuration
+└── render.yaml            # Render Blueprint deployment specification
 ```
 
-## Working with the contract
+---
 
-No installs needed beyond Node (`npx` runs the tools).
+## 🚀 Quickstart & Local Setup
 
+### Prerequisites
+* Java 21 JDK
+* Android Studio (Ladybug / 2024.2.1+)
+* Docker & Docker Compose
+
+### 1. Running the Backend Locally
+You can run the backend service locally using Docker Compose or Gradle:
+
+**Via Docker Compose:**
 ```bash
-# Lint: fix every error before you open a PR
-npx @redocly/cli lint docs/openapi.yaml
-
-# Mock server: a fake API built from the contract, at http://127.0.0.1:4010
-npx @stoplight/prism-cli mock docs/openapi.yaml
-
-curl -H "Authorization: Bearer x" "http://127.0.0.1:4010/api/v1/workouts?page=0&size=20"
-curl -i http://127.0.0.1:4010/api/v1/workouts          # 401: no token
-curl -H "Authorization: Bearer x" -H "Prefer: code=404" \
-     http://127.0.0.1:4010/api/v1/workouts/42          # force an error response
+# Start local backend container on port 8080
+docker compose up --build -d
 ```
 
-The mock **validates** your requests and returns the `example:` values from the contract.
-**Nothing is saved**: a POST followed by a GET returns the example, not what you posted. The
-Android emulator reaches it at `http://10.0.2.2:4010`.
+**Via Gradle:**
+```bash
+cd backend
+./gradlew bootRun
+```
+* **Local API Base URL**: `http://localhost:8080` (or `http://10.0.2.2:8080` from Android Emulator)
+* **Local H2 Console**: `http://localhost:8080/h2-console`
 
-To see the contract rendered, paste `docs/openapi.yaml` into https://editor.swagger.io.
+### 2. Running the Android Application
+1. Open the `android/` directory in Android Studio.
+2. Select an Android Emulator (API Level 24+).
+3. Click **Run 'app'** or execute:
+```bash
+cd android
+./gradlew installDebug
+```
 
-## Links
+---
 
-- Project 02 prompt and rubric: Canvas → Project 02 module
-- OpenAPI 3.0 spec: https://spec.openapis.org/oas/v3.0.3
-- Prism: https://docs.stoplight.io/docs/prism
-- Mermaid ER diagrams: https://mermaid.js.org/syntax/entityRelationshipDiagram.html
-- RFC 9457 Problem Details: https://www.rfc-editor.org/rfc/rfc9457
+## ☁️ Cloud Backend Deployment (Render)
+
+* **Live Web Service Base URL**: `https://moviebox-backend-62qk.onrender.com/`
+* **Hosted Database**: Render PostgreSQL over SSL (`sslmode=require`)
+* **OpenAPI Contract**: Defined in [`docs/openapi.yaml`](docs/openapi.yaml)
