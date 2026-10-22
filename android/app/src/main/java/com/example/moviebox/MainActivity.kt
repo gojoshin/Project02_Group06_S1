@@ -1,6 +1,7 @@
 package com.example.moviebox
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.SystemBarStyle
 import androidx.activity.compose.BackHandler
@@ -37,6 +38,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -48,28 +51,20 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.moviebox.ui.components.ComingSoonScreen
-import com.example.moviebox.ui.screens.HistoryScreen
-import com.example.moviebox.ui.screens.LandingScreen
-import com.example.moviebox.ui.theme.MovieBoxTheme
-import java.util.Locale
-import com.example.moviebox.ui.screens.LoginScreen
-import android.util.Log
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import com.example.moviebox.data.AuthRetrofit
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.moviebox.data.LoginRequest
-import kotlinx.coroutines.launch
-
-
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviebox.data.AuthRetrofit
+import com.example.moviebox.data.LoginRequest
 import com.example.moviebox.ui.AuthState
 import com.example.moviebox.ui.AuthViewModel
+import com.example.moviebox.ui.components.ComingSoonScreen
 import com.example.moviebox.ui.screens.AdminScreen
+import com.example.moviebox.ui.screens.HistoryScreen
+import com.example.moviebox.ui.screens.LandingScreen
 import com.example.moviebox.ui.screens.LoginScreen
-
-// Screens for connecting the bottom bar UI are ui/screens/.
+import com.example.moviebox.ui.screens.ProfileScreen
+import com.example.moviebox.ui.theme.MovieBoxTheme
+import java.util.Locale
 
 enum class Tab(
     val label: String,
@@ -99,22 +94,38 @@ class MainActivity : ComponentActivity() {
             MovieBoxTheme {
                 val authViewModel: AuthViewModel = viewModel()
                 
-                // Collect state from ViewModel using collectAsStateWithLifecycle (better for Android)
                 val authState by authViewModel.authState.collectAsStateWithLifecycle()
+                val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
+                val errorMessage by authViewModel.errorMessage.collectAsStateWithLifecycle()
                 
                 when (authState) {
                     AuthState.LOGGED_OUT, AuthState.ERROR, AuthState.LOADING -> {
                         LoginScreen(
                             onGoogleTokenReceived = { token ->
                                 authViewModel.authenticateWithGoogle(token)
-                            }
+                            },
+                            onPasswordLogin = { email, password ->
+                                authViewModel.loginWithPassword(email, password)
+                            },
+                            onPasswordRegister = { email, displayName, password ->
+                                authViewModel.registerWithPassword(email, displayName, password)
+                            },
+                            externalErrorMessage = errorMessage
                         )
                     }
                     AuthState.LOGGED_IN_USER -> {
-                        MovieBoxApp(isAdmin = false)
+                        MovieBoxApp(
+                            isAdmin = false,
+                            currentUser = currentUser,
+                            onSignOut = { authViewModel.logout() }
+                        )
                     }
                     AuthState.LOGGED_IN_ADMIN -> {
-                        MovieBoxApp(isAdmin = true)
+                        MovieBoxApp(
+                            isAdmin = true,
+                            currentUser = currentUser,
+                            onSignOut = { authViewModel.logout() }
+                        )
                     }
                 }
             }
@@ -124,7 +135,11 @@ class MainActivity : ComponentActivity() {
 
 /** The app shell. Whatever screen is active, plus the bottom bar. */
 @Composable
-fun MovieBoxApp(isAdmin: Boolean = false) {
+fun MovieBoxApp(
+    isAdmin: Boolean = false,
+    currentUser: com.example.moviebox.data.User? = null,
+    onSignOut: () -> Unit = {}
+) {
     // Which tab is picked.
     var currentTab by rememberSaveable { mutableStateOf(Tab.HOME) }
 
@@ -180,9 +195,9 @@ fun MovieBoxApp(isAdmin: Boolean = false) {
 
                 Tab.HISTORY -> HistoryScreen()
 
-                Tab.PROFILE -> ComingSoonScreen(
-                    title = "Profile",
-                    note = "Your ratings, sign out, delete account, and the admin link (admins only)."
+                Tab.PROFILE -> ProfileScreen(
+                    currentUser = currentUser,
+                    onSignOut = onSignOut
                 )
                 
                 Tab.ADMIN -> AdminScreen()

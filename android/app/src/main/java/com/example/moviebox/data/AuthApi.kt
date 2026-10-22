@@ -11,6 +11,17 @@ data class LoginRequest(
     val idToken: String
 )
 
+data class PasswordRegisterRequest(
+    val email: String,
+    val displayName: String,
+    val password: String
+)
+
+data class PasswordLoginRequest(
+    val email: String,
+    val password: String
+)
+
 data class User(
     val id: Long,
     val email: String,
@@ -27,6 +38,16 @@ interface AuthApi {
     @POST("api/v1/auth/login")
     suspend fun loginWithGoogle(
         @Body request: LoginRequest
+    ): User
+
+    @POST("api/v1/auth/register")
+    suspend fun registerWithPassword(
+        @Body request: PasswordRegisterRequest
+    ): User
+
+    @POST("api/v1/auth/login/password")
+    suspend fun loginWithPassword(
+        @Body request: PasswordLoginRequest
     ): User
 
     @GET("api/v1/users")
