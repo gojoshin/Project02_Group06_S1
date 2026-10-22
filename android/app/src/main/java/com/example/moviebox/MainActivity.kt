@@ -62,6 +62,7 @@ import com.example.moviebox.ui.screens.AdminScreen
 import com.example.moviebox.ui.screens.HistoryScreen
 import com.example.moviebox.ui.screens.LandingScreen
 import com.example.moviebox.ui.screens.LoginScreen
+import com.example.moviebox.ui.screens.ProfileScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
 
@@ -94,6 +95,7 @@ class MainActivity : ComponentActivity() {
                 val authViewModel: AuthViewModel = viewModel()
                 
                 val authState by authViewModel.authState.collectAsStateWithLifecycle()
+                val currentUser by authViewModel.currentUser.collectAsStateWithLifecycle()
                 val errorMessage by authViewModel.errorMessage.collectAsStateWithLifecycle()
                 
                 when (authState) {
@@ -112,10 +114,18 @@ class MainActivity : ComponentActivity() {
                         )
                     }
                     AuthState.LOGGED_IN_USER -> {
-                        MovieBoxApp(isAdmin = false)
+                        MovieBoxApp(
+                            isAdmin = false,
+                            currentUser = currentUser,
+                            onSignOut = { authViewModel.logout() }
+                        )
                     }
                     AuthState.LOGGED_IN_ADMIN -> {
-                        MovieBoxApp(isAdmin = true)
+                        MovieBoxApp(
+                            isAdmin = true,
+                            currentUser = currentUser,
+                            onSignOut = { authViewModel.logout() }
+                        )
                     }
                 }
             }
@@ -125,7 +135,11 @@ class MainActivity : ComponentActivity() {
 
 /** The app shell. Whatever screen is active, plus the bottom bar. */
 @Composable
-fun MovieBoxApp(isAdmin: Boolean = false) {
+fun MovieBoxApp(
+    isAdmin: Boolean = false,
+    currentUser: com.example.moviebox.data.User? = null,
+    onSignOut: () -> Unit = {}
+) {
     // Which tab is picked.
     var currentTab by rememberSaveable { mutableStateOf(Tab.HOME) }
 
@@ -181,9 +195,9 @@ fun MovieBoxApp(isAdmin: Boolean = false) {
 
                 Tab.HISTORY -> HistoryScreen()
 
-                Tab.PROFILE -> ComingSoonScreen(
-                    title = "Profile",
-                    note = "Your ratings, sign out, delete account, and the admin link (admins only)."
+                Tab.PROFILE -> ProfileScreen(
+                    currentUser = currentUser,
+                    onSignOut = onSignOut
                 )
                 
                 Tab.ADMIN -> AdminScreen()
