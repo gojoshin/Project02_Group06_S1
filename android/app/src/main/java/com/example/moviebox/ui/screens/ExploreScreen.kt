@@ -46,16 +46,33 @@ import com.example.moviebox.ui.components.ScreenSidePadding
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import androidx.compose.material3.OutlinedTextFieldDefaults
 
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.CircularProgressIndicator
+import com.example.moviebox.data.MovieRetrofit
+import com.example.moviebox.data.toMovie
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExploreScreen(
-    movies: List<Movie> = sampleMovies,
     onOpenMovie: (Int) -> Unit = {}
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
+    var fetchedMovies by rememberSaveable { mutableStateOf<List<Movie>>(emptyList()) }
+    var isLoading by rememberSaveable { mutableStateOf(true) }
     val focusManager = LocalFocusManager.current
 
-    val filteredMovies = movies.filter {
+    LaunchedEffect(Unit) {
+        try {
+            val apiMovies = MovieRetrofit.api.getPopularMovies()
+            fetchedMovies = apiMovies.map { it.toMovie() }
+        } catch (e: Exception) {
+            fetchedMovies = sampleMovies
+        } finally {
+            isLoading = false
+        }
+    }
+
+    val filteredMovies = fetchedMovies.filter {
         it.title.contains(searchQuery, ignoreCase = true) ||
         it.director.contains(searchQuery, ignoreCase = true) ||
         it.year.toString().contains(searchQuery)
@@ -74,6 +91,7 @@ fun ExploreScreen(
                 .fillMaxWidth()
                 .padding(horizontal = ScreenSidePadding),
             placeholder = { Text("Search movies, directors, years...") },
+
             leadingIcon = {
                 Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
             },
@@ -100,7 +118,14 @@ fun ExploreScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        if (filteredMovies.isEmpty()) {
+        if (isLoading) {
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
+            }
+        } else if (filteredMovies.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center
