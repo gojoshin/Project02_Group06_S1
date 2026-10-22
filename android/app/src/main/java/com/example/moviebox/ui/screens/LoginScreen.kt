@@ -157,6 +157,20 @@ fun LoginScreen(
             )
         }
 
+        Spacer(modifier = Modifier.height(12.dp))
+
+        androidx.compose.material3.OutlinedButton(
+            onClick = { onGoogleTokenReceived("mock_dev_token") },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text(
+                text = "DEV / TEST BYPASS LOGIN",
+                fontFamily = Mono,
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
         if (isLoading) {
             Spacer(
                 modifier = Modifier.height(16.dp)
