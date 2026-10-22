@@ -44,6 +44,7 @@ import com.example.moviebox.data.sampleMovies
 import com.example.moviebox.ui.components.PosterBlock
 import com.example.moviebox.ui.components.ScreenSidePadding
 import com.example.moviebox.ui.theme.MovieBoxTheme
+import androidx.compose.material3.OutlinedTextFieldDefaults
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -89,8 +90,9 @@ fun ExploreScreen(
             ),
             singleLine = true,
             shape = RoundedCornerShape(12.dp),
-            colors = TextFieldDefaults.outlinedTextFieldColors(
-                containerColor = MaterialTheme.colorScheme.surface,
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
                 unfocusedBorderColor = Color.Transparent,
                 focusedBorderColor = MaterialTheme.colorScheme.primary
             )
