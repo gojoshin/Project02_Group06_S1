@@ -16,6 +16,9 @@ public class UserAccount {
     @Column(nullable = false)
     private String displayName;
 
+    @Column(nullable = true)
+    private String passwordHash;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.USER;
@@ -23,8 +26,13 @@ public class UserAccount {
     public UserAccount() {}
 
     public UserAccount(String email, String displayName, Role role) {
+        this(email, displayName, null, role);
+    }
+
+    public UserAccount(String email, String displayName, String passwordHash, Role role) {
         this.email = email;
         this.displayName = displayName;
+        this.passwordHash = passwordHash;
         this.role = role != null ? role : Role.USER;
     }
 
@@ -45,6 +53,12 @@ public class UserAccount {
     }
     public void setDisplayName(String displayName) {
         this.displayName = displayName;
+    }
+    public String getPasswordHash() {
+        return passwordHash;
+    }
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
     public Role getRole() {
         return role;

@@ -107,6 +107,12 @@ class MainActivity : ComponentActivity() {
                         LoginScreen(
                             onGoogleTokenReceived = { token ->
                                 authViewModel.authenticateWithGoogle(token)
+                            },
+                            onPasswordLogin = { email, password ->
+                                authViewModel.loginWithPassword(email, password)
+                            },
+                            onPasswordRegister = { email, displayName, password ->
+                                authViewModel.registerWithPassword(email, displayName, password)
                             }
                         )
                     }
