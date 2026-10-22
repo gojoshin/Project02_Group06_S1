@@ -21,8 +21,8 @@ info:
 servers:
   - url: http://localhost:8080
     description: Local (docker compose up)
-  - url: https://your-api.example.com
-    description: Production (replace in Sprint 3)
+  - url: https://moviebox-backend-62qk.onrender.com
+    description: Production (Render Cloud Deployment)
 
 # Every endpoint requires a Bearer token unless it overrides this with `security: []`.
 security:

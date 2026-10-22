@@ -27,4 +27,4 @@ tmdb:
 
 google:
   oauth:
-    client-id: ${GOOGLE_WEB_CLIENT_ID}
+    client-id: ${GOOGLE_WEB_CLIENT_ID:demo_client_id}
