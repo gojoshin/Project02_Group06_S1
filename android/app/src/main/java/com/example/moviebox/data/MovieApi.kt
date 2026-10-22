@@ -37,6 +37,9 @@ fun TmdbMovieDto.toMovie(): Movie {
 interface MovieApi {
     @GET("api/v1/movies/popular")
     suspend fun getPopularMovies(): List<TmdbMovieDto>
+
+    @GET("api/v1/movies/{movieId}")
+    suspend fun getMovie(@retrofit2.http.Path("movieId") movieId: Long): TmdbMovieDto
 }
 
 object MovieRetrofit {
