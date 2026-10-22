@@ -23,6 +23,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("com.google.api-client:google-api-client:2.7.2")
+    
+    // Swagger UI (API Explorer)
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.3.0")
 
     runtimeOnly("com.h2database:h2")
     runtimeOnly("org.postgresql:postgresql")
