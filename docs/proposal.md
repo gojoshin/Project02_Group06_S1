@@ -194,7 +194,8 @@ Mark each endpoint `public`, `user`, or `admin`. Mark which collection paginates
 filters or sorts.
 
 ## 5. Technical choices
-- **Database host:** Supabase
+- **Database host:** Render PostgreSQL
+- **Backend hosting:** Render Web Service (https://moviebox-backend-62qk.onrender.com)
 - **OAuth2 provider:** Google
 - **Repo layout:** Monorepo, we want to keep everything in one repository.
 
