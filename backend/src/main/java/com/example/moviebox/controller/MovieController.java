@@ -5,7 +5,10 @@ import com.example.moviebox.dto.tmdb.TmdbMovie;
 import com.example.moviebox.entity.MediaTypeEnum;
 import com.example.moviebox.entity.Review;
 import com.example.moviebox.repository.ReviewRepository;
+import com.example.moviebox.dto.tmdb.TmdbPageResponse;
 import com.example.moviebox.service.TmdbService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +23,36 @@ public class MovieController {
     public MovieController(TmdbService tmdbService, ReviewRepository reviewRepository) {
         this.tmdbService = tmdbService;
         this.reviewRepository = reviewRepository;
+    }
+
+    /**
+     * Every movie, one page at a time, for the Explore screen. Shows popular
+     * movies by default, or search results when a query is given.
+     */
+    @Operation(summary = "Browse or search movies, 20 per page")
+    @GetMapping
+    public MoviePageDto getMovies(
+            @Parameter(description = "Page number, starting at 1 (TMDB stops at 500)")
+            @RequestParam(defaultValue = "1") int page,
+            @Parameter(description = "Optional title search, like \"dune\"")
+            @RequestParam(required = false) String query
+    ) {
+        // TMDB only allows pages 1 through 500
+        int safePage = Math.max(1, Math.min(page, 500));
+
+        TmdbPageResponse<TmdbMovie> tmdbPage;
+        if (query == null || query.isBlank()) {
+            tmdbPage = tmdbService.getPopularMoviesPage(safePage);
+        } else {
+            tmdbPage = tmdbService.searchMovies(query.trim(), safePage);
+        }
+
+        List<TmdbMovie> movies = tmdbPage.results();
+        int totalPages = tmdbPage.totalPages() != null ? Math.min(tmdbPage.totalPages(), 500) : 1;
+        long totalResults = tmdbPage.totalResults() != null ? tmdbPage.totalResults() : movies.size();
+
+        PageMetaDto pageMeta = new PageMetaDto(movies.size(), safePage, totalResults, totalPages);
+        return new MoviePageDto(movies, pageMeta);
     }
 
     // Popular movies for the home screen, straight from TMDB.

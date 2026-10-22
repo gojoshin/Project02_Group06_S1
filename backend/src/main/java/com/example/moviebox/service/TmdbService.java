@@ -56,6 +56,44 @@ public class TmdbService {
         }
     }
 
+     // One page of TMDB's popular movies. Used by the Explore screen.
+
+    public TmdbPageResponse<TmdbMovie> getPopularMoviesPage(int page) {
+        try {
+            TmdbPageResponse<TmdbMovie> response = restClient.get()
+                    .uri("/movie/popular?api_key={key}&page={page}", tmdbConfig.getTmdbApiKey(), page)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<TmdbPageResponse<TmdbMovie>>() {});
+            return response != null && response.results() != null ? response : getSamplePage();
+        } catch (Exception e) {
+            return getSamplePage();
+        }
+    }
+
+
+     // Searches TMDB for movies by title, one page at a time.
+
+    public TmdbPageResponse<TmdbMovie> searchMovies(String query, int page) {
+        try {
+            TmdbPageResponse<TmdbMovie> response = restClient.get()
+                    .uri("/search/movie?api_key={key}&query={query}&page={page}", tmdbConfig.getTmdbApiKey(), query, page)
+                    .retrieve()
+                    .body(new ParameterizedTypeReference<TmdbPageResponse<TmdbMovie>>() {});
+            return response != null && response.results() != null ? response : getSamplePage();
+        } catch (Exception e) {
+            // TMDB is unreachable, so search the sample movies instead
+            List<TmdbMovie> matches = getSampleMovies().stream()
+                    .filter(movie -> movie.title().toLowerCase().contains(query.toLowerCase()))
+                    .toList();
+            return new TmdbPageResponse<>(1, matches, 1, matches.size());
+        }
+    }
+
+    // The sample movies as a single page, for when TMDB can't be reached
+    private TmdbPageResponse<TmdbMovie> getSamplePage() {
+        List<TmdbMovie> samples = getSampleMovies();
+        return new TmdbPageResponse<>(1, samples, 1, samples.size());
+    }
     public TmdbShow getShow(Long showId) {
         try {
             return restClient.get()

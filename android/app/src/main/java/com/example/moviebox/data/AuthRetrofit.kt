@@ -26,7 +26,7 @@ object AuthRetrofit {
 
 
     val api: AuthApi = Retrofit.Builder()
-        .baseUrl("https://moviebox-backend-62qk.onrender.com/")
+        .baseUrl("http://127.0.0.1:8080/")
         .addConverterFactory(GsonConverterFactory.create())
         .build()
         .create(AuthApi::class.java)

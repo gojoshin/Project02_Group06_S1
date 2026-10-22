@@ -32,6 +32,7 @@ import com.example.moviebox.ui.components.PosterBlock
 import com.example.moviebox.data.Movie
 import com.example.moviebox.data.MovieRetrofit
 import com.example.moviebox.data.toMovie
+import androidx.compose.runtime.remember
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +42,7 @@ fun MovieDetailScreen(
     isFavorite: Boolean = false,
     onToggleFavorite: () -> Unit = {}
 ) {
-    var movie by rememberSaveable { mutableStateOf(sampleMovies.find { it.id == movieId }) }
+    var movie by remember { mutableStateOf(sampleMovies.find { it.id == movieId }) }
     var isLoading by rememberSaveable { mutableStateOf(movie == null) }
 
     LaunchedEffect(movieId) {

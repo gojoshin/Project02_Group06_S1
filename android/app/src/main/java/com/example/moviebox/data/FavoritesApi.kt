@@ -41,7 +41,7 @@ interface FavoritesApi {
 
 object FavoritesRetrofit {
 
-    private const val BASE_URL = "https://moviebox-backend-62qk.onrender.com/"
+    private const val BASE_URL = "http://127.0.0.1:8080/"
 
     val api: FavoritesApi = Retrofit.Builder()
         .baseUrl(BASE_URL)
