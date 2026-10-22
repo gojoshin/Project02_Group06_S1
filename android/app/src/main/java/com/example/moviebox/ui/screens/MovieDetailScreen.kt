@@ -21,12 +21,17 @@ import com.example.moviebox.data.sampleProviders
 import com.example.moviebox.ui.components.ScreenSidePadding
 import com.example.moviebox.ui.components.SectionLabel
 import com.example.moviebox.ui.theme.Display
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
+import com.example.moviebox.ui.components.PosterBlock
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MovieDetailScreen(
     movieId: Int,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    isFavorite: Boolean = false,
+    onToggleFavorite: () -> Unit = {}
 ) {
     val movie = sampleMovies.find { it.id == movieId }
 
@@ -58,17 +63,53 @@ fun MovieDetailScreen(
                 return@Scaffold
             }
 
-            // Simple header block mimicking the poster color
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(200.dp)
-                    .background(Color(movie.posterColor)),
-                contentAlignment = Alignment.Center
+            // Poster on the left, title and info on the right
+            Row(verticalAlignment = Alignment.Bottom) {
+                // Same poster as the landing page. Falls back to the colored
+                // box if the movie has no posterUrl.
+                PosterBlock(
+                    movie = movie,
+                    modifier = Modifier.width(130.dp)
+                )
+
+                Spacer(modifier = Modifier.width(16.dp))
+
+                Column {
+                    Text(
+                        text = movie.title,
+                        fontFamily = Display,
+                        fontSize = 28.sp,
+                        lineHeight = 32.sp,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = "${movie.year} • Directed by ${movie.director}",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Favorite button. Filled red heart when saved, outline when not.
+            OutlinedButton(
+                onClick = onToggleFavorite,
+                modifier = Modifier.fillMaxWidth()
             ) {
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = null,
+                    tint = if (isFavorite) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onBackground
+                )
+                Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = "Poster Placeholder",
-                    color = Color.White.copy(alpha = 0.5f)
+                    text = if (isFavorite) "Favorited" else "Add to favorites",
+                    color = MaterialTheme.colorScheme.onBackground
                 )
             }
 
@@ -80,7 +121,7 @@ fun MovieDetailScreen(
                 fontSize = 32.sp,
                 color = MaterialTheme.colorScheme.onBackground
             )
-            
+
             Text(
                 text = "${movie.year} • Directed by ${movie.director}",
                 fontSize = 14.sp,

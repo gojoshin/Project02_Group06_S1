@@ -40,7 +40,7 @@ fun HistoryScreen(
     ) {
         Column(Modifier.padding(horizontal = ScreenSidePadding)) {
             Text(
-                text = "Watching History",
+                text = "Watch History",
                 fontFamily = Display,
                 fontSize = 46.sp,
                 color = MaterialTheme.colorScheme.onBackground
