@@ -22,10 +22,12 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Explore
 import androidx.compose.material.icons.outlined.FavoriteBorder
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Icon
@@ -47,32 +49,47 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.moviebox.ui.components.ComingSoonScreen
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.outlined.History
 import com.example.moviebox.ui.screens.HistoryScreen
+import com.example.moviebox.ui.screens.LandingScreen
 import com.example.moviebox.ui.theme.MovieBoxTheme
 import java.util.Locale
-import com.example.moviebox.ui.screens.LandingScreen
+import com.example.moviebox.ui.screens.LoginScreen
+import android.util.Log
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import com.example.moviebox.data.AuthRetrofit
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.moviebox.data.LoginRequest
+import kotlinx.coroutines.launch
+
+
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.moviebox.ui.AuthState
+import com.example.moviebox.ui.AuthViewModel
+import com.example.moviebox.ui.screens.AdminScreen
+import com.example.moviebox.ui.screens.LoginScreen
 
 // Screens for connecting the bottom bar UI are ui/screens/.
 
 enum class Tab(
     val label: String,
     val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector
+    val unselectedIcon: ImageVector,
+    val requiresAdmin: Boolean = false
 ) {
     HOME("Home", Icons.Filled.Home, Icons.Outlined.Home),
     EXPLORE("Explore", Icons.Filled.Explore, Icons.Outlined.Explore),
     FAVORITES("Favorites", Icons.Filled.Favorite, Icons.Outlined.FavoriteBorder),
     HISTORY("History", Icons.Filled.History, Icons.Outlined.History),
-    PROFILE("Profile", Icons.Filled.Person, Icons.Outlined.Person)
+    PROFILE("Profile", Icons.Filled.Person, Icons.Outlined.Person),
+    ADMIN("Admin", Icons.Filled.Person, Icons.Outlined.Person, true) // Hidden by default
 }
 
 class MainActivity : ComponentActivity() {
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        //DarkMode by default so makes the UI light and bright
         enableEdgeToEdge(
             statusBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT),
             navigationBarStyle = SystemBarStyle.dark(android.graphics.Color.TRANSPARENT)
@@ -80,9 +97,26 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             MovieBoxTheme {
-                // TODO (Sprint 2/3): Google sign-in goes here, before the app shows
-                // and only show MovieBoxApp() once we have a token.
-                MovieBoxApp()
+                val authViewModel: AuthViewModel = viewModel()
+                
+                // Collect state from ViewModel using collectAsStateWithLifecycle (better for Android)
+                val authState by authViewModel.authState.collectAsStateWithLifecycle()
+                
+                when (authState) {
+                    AuthState.LOGGED_OUT, AuthState.ERROR, AuthState.LOADING -> {
+                        LoginScreen(
+                            onGoogleTokenReceived = { token ->
+                                authViewModel.authenticateWithGoogle(token)
+                            }
+                        )
+                    }
+                    AuthState.LOGGED_IN_USER -> {
+                        MovieBoxApp(isAdmin = false)
+                    }
+                    AuthState.LOGGED_IN_ADMIN -> {
+                        MovieBoxApp(isAdmin = true)
+                    }
+                }
             }
         }
     }
@@ -90,7 +124,7 @@ class MainActivity : ComponentActivity() {
 
 /** The app shell. Whatever screen is active, plus the bottom bar. */
 @Composable
-fun MovieBoxApp() {
+fun MovieBoxApp(isAdmin: Boolean = false) {
     // Which tab is picked.
     var currentTab by rememberSaveable { mutableStateOf(Tab.HOME) }
 
@@ -120,6 +154,7 @@ fun MovieBoxApp() {
         bottomBar = {
             BottomTabBar(
                 currentTab = currentTab,
+                isAdmin = isAdmin,
                 onSelectTab = { pickedTab -> currentTab = pickedTab }
             )
         }
@@ -149,6 +184,8 @@ fun MovieBoxApp() {
                     title = "Profile",
                     note = "Your ratings, sign out, delete account, and the admin link (admins only)."
                 )
+                
+                Tab.ADMIN -> AdminScreen()
             }
         }
     }
@@ -156,15 +193,13 @@ fun MovieBoxApp() {
 
 
 // BottomTabBar
-//
-// Same look as last project's tab bar (thin line on top, small uppercase
-// labels, white for the selected tab and gray for the rest), but with an
-// icon above each label instead of a dot.
 @Composable
-private fun BottomTabBar(currentTab: Tab, onSelectTab: (Tab) -> Unit) {
+private fun BottomTabBar(currentTab: Tab, isAdmin: Boolean, onSelectTab: (Tab) -> Unit) {
     val lineColor = MaterialTheme.colorScheme.outline
     val selectedColor = MaterialTheme.colorScheme.onBackground
     val unselectedColor = MaterialTheme.colorScheme.onSurfaceVariant
+    
+    val visibleTabs = Tab.entries.filter { !it.requiresAdmin || isAdmin }
 
     Row(
         modifier = Modifier
@@ -172,13 +207,12 @@ private fun BottomTabBar(currentTab: Tab, onSelectTab: (Tab) -> Unit) {
             .selectableGroup()
             .background(MaterialTheme.colorScheme.surface)
             .drawBehind {
-                // Thin divider along the top of the bar
                 drawLine(lineColor, Offset(0f, 0f), Offset(size.width, 0f), 1.dp.toPx())
             }
             .navigationBarsPadding()
             .padding(vertical = 10.dp)
     ) {
-        for (tab in Tab.entries) {
+        for (tab in visibleTabs) {
             val isSelected = tab == currentTab
             val tabColor = if (isSelected) selectedColor else unselectedColor
 

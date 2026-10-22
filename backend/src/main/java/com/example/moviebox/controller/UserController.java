@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 
 @RestController
@@ -46,11 +48,25 @@ public class UserController {
         deleteUserData(currentUserId);
     }
 
+    private void checkAdminAccess() {
+        // Mock current user - grabbing the first user we find in the DB
+        List<UserAccount> users = userRepository.findAll();
+        if (users.isEmpty()) {
+             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        UserAccount current = users.get(0);
+        if (current.getRole() != com.example.moviebox.entity.Role.ADMIN) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Admin access required");
+        }
+    }
+
     @GetMapping
     public UserPageDto listUsers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
+        checkAdminAccess();
+        
         List<UserAccount> users = userRepository.findAll();
         List<UserDto> dtos = users.stream()
                 .map(u -> new UserDto(u.getId(), u.getEmail(), u.getDisplayName(), u.getRole()))
@@ -62,6 +78,9 @@ public class UserController {
 
     @GetMapping("/{userId}")
     public UserDto getUser(@PathVariable Long userId) {
+        checkAdminAccess();
+
+        // Check if user exists
         UserAccount user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User " + userId + " not found"));
         return new UserDto(user.getId(), user.getEmail(), user.getDisplayName(), user.getRole());
@@ -69,6 +88,9 @@ public class UserController {
 
     @PatchMapping("/{userId}")
     public UserDto updateUserRole(@PathVariable Long userId, @RequestBody UserPatchDto patch) {
+        checkAdminAccess();
+
+        // Check if user exists
         UserAccount user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User " + userId + " not found"));
 
@@ -83,6 +105,8 @@ public class UserController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @Transactional
     public void deleteUser(@PathVariable Long userId) {
+        checkAdminAccess();
+
         if (!userRepository.existsById(userId)) {
             throw new ResourceNotFoundException("User " + userId + " not found");
         }
